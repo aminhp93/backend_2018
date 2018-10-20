@@ -26,7 +26,8 @@ SECRET_KEY = 'xzf91c&_(su&t*mo0wwd8f*6d)135*+v^d!iz5jmhb4mwcvdms'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://project-2018-backend.herokuapp.com', 'localhost', 'http://localhost:8000']
+ALLOWED_HOSTS = ['https://project-2018-backend.herokuapp.com',
+                 'localhost', 'http://localhost:8000']
 
 
 # Application definition
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'posts',
     'industries',
+    'tradingStatistics',
     'corsheaders'
 ]
 

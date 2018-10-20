@@ -17,10 +17,19 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
+from .views import home
 from industries import views as industries_views
+from tradingStatistics import views as trading_statistics_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', industries_views.get_all_industries, name="all_indudstries"),
-    path('insert', industries_views.insert_all_industries, name='insert')
+    path('', home, name='home'),
+    path('all-indudstries', industries_views.get_all_industries,
+         name="all-indudstries"),
+    path('all-indudstries/insert', industries_views.insert_all_industries,
+         name='all-indudstries-insert'),
+    path('trading-statistic', trading_statistics_views.get_trading_statistic,
+         name="trading-statistic"),
+    path('trading-statistic/insert', trading_statistics_views.insert_trading_statistic,
+         name='trading-statistic-insert')
 ]
