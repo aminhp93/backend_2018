@@ -160,4 +160,5 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
+RELIC_LICENCE = 'ba8107196204f7310b42e78a18086d9f6cbe49c5'
 django_heroku.settings(locals())
