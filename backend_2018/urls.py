@@ -17,9 +17,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
-from posts import views as posts_views
+from industries import views as industries_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', posts_views.test, name="test")
+    path('', industries_views.get_all_industries, name="all_indudstries"),
+    path('insert', industries_views.insert_all_industries, name='insert')
 ]
