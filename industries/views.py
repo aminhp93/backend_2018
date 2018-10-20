@@ -47,7 +47,6 @@ def get_all_industries(request):
 def insert_all_industries(request):
     Industry.objects.all().delete()
     url = 'https://www.fireant.vn/api/Data/Finance/AllIndustryFinancialInfo'
-    insert = 'false'
     response = requests.get(url)
     if response.status_code == 200:
         i = 0
@@ -104,12 +103,8 @@ def insert_all_industries(request):
                 elif (key == 'MarketCapitalization'):
                     new_industry.MarketCapitalization = obj['MarketCapitalization']
             new_industry.save()
-            if new_industry.id:
-                insert = 'true'
-            else:
-                insert = 'false'
+            if not new_industry.id:
+                return JsonResponse({'data': 'false'})
+            print(i)
             i += 1
-        if (insert == 'true'):
-            return JsonResponse({'data': 'true'})
-        else:
-            return JsonResponse({'data': 'false'})
+        return JsonResponse({'data': 'true'})

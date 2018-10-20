@@ -9,6 +9,7 @@ from .models import TradingStatistic
 def get_trading_statistic(request):
     response = []
     tradingStatistic = TradingStatistic.objects.all()
+    print(len(tradingStatistic))
     i = 0
     while i < len(tradingStatistic):
         obj = tradingStatistic[i]
@@ -140,10 +141,10 @@ def get_trading_statistic(request):
 def insert_trading_statistic(request):
     TradingStatistic.objects.all().delete()
     url = 'https://svr2.fireant.vn/api/Data/Markets/TradingStatistic'
-    insert = 'false'
     response = requests.get(url)
     if response.status_code == 200:
         i = 0
+        print(len(response.json()))
         while i < len(response.json()):
             obj = response.json()[i]
             new_trading_statistic = TradingStatistic()
@@ -384,13 +385,9 @@ def insert_trading_statistic(request):
                     new_trading_statistic.Price6m = obj['Price6m']
                 elif key == "Price1y":
                     new_trading_statistic.Price1y = obj['Price1y']
-                new_trading_statistic.save()
-                if new_trading_statistic.id:
-                    insert = 'true'
-                else:
-                    insert = 'false'
-                i += 1
-        if (insert == 'true'):
-            return JsonResponse({'data': 'true'})
-        else:
-            return JsonResponse({'data': 'false'})
+            new_trading_statistic.save()
+            if not new_trading_statistic.id:
+                return JsonResponse({'data': 'false'})
+            print(i)
+            i += 1
+        return JsonResponse({'data': 'true'})
