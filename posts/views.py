@@ -18,9 +18,9 @@ def test(request):
     print(r)
     # return HttpResponse(html)
 
-    url1 = 'https://project-2018-backend.herokuapp.com'
-    request = requests.get(url1)
-    response = request.json()
+    # url1 = 'https://project-2018-backend.herokuapp.com'
+    # request = requests.get(url1)
+    # response = request.json()
     first = Industry.objects.all()[0]
     print(first)
     response = {
