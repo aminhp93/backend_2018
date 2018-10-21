@@ -34,6 +34,8 @@ def insert_historical_quote(request):
     j = 0
     while j < len(allSymbol.split(',')):
         symbol = allSymbol.split(',')[j]
+        url2 = 'https://project-2018-backend.herokuapp.com/'
+        requests.get(url2)
         print(symbol)
         url = 'https://svr1.fireant.vn/api/Data/Markets/HistoricalQuotes?symbol=' + \
             symbol + '&startDate=2017-10-8&endDate=2018-10-21'
