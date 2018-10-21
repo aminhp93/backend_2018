@@ -20,6 +20,7 @@ from django.conf.urls import url, include
 from .views import home
 from industries import views as industries_views
 from tradingStatistics import views as trading_statistics_views
+from historicalQuotes import views as historical_quotes_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,5 +32,9 @@ urlpatterns = [
     path('trading-statistic', trading_statistics_views.get_trading_statistic,
          name="trading-statistic"),
     path('trading-statistic/insert', trading_statistics_views.insert_trading_statistic,
-         name='trading-statistic-insert')
+         name='trading-statistic-insert'),
+    path('historical-quote', historical_quotes_views.get_historical_quote_by_symbol_and_date,
+         name="historical-quote"),
+    path('historical-quote/insert', historical_quotes_views.insert_historical_quote,
+         name='historical-quote-insert')
 ]
