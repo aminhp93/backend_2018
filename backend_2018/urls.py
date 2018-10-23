@@ -35,8 +35,8 @@ urlpatterns = [
          name='trading-statistic-insert'),
     path('historical-quote', historical_quotes_views.get_historical_quote_by_symbol_and_date,
          name="historical-quote"),
-    path('historical-quote/insert/all', historical_quotes_views.insert_all_historical_quote,
-         name='historical-quote-insert-all'),
+    path('historical-quote/delete/all', historical_quotes_views.delete_all_historical_quote,
+         name='historical-quote-delete-all'),
     path('historical-quote/insert/<symbol>/', historical_quotes_views.insert_historical_quote,
          name='historical-quote-insert'),
 ]
