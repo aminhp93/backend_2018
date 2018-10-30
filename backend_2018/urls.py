@@ -22,6 +22,8 @@ from industries import views as industries_views
 from tradingStatistics import views as trading_statistics_views
 from historicalQuotes import views as historical_quotes_views
 
+from notes import views as notes_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
@@ -39,4 +41,7 @@ urlpatterns = [
          name='historical-quote-delete-all'),
     path('historical-quote/insert/<symbol>/', historical_quotes_views.insert_historical_quote,
          name='historical-quote-insert'),
+    path('notes/all', notes_views.get_one_note, name='note-all'),
+    path('note/insert', notes_views.insert_note, name='note-insert'),
+    path('note/update', notes_views.update_note, name='note-update')
 ]
