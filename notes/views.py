@@ -8,10 +8,13 @@ from django.contrib import messages
 import json
 
 
+@csrf_exempt
 def get_one_note(request):
     note = Note.objects.first()
     if not note:
-        return JsonResponse({'note': 'NO NOTE'})
+        note = Note()
+        note.content = 'New note'
+        note.save()
     return JsonResponse({'note': note.content})
 
 
