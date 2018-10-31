@@ -101,7 +101,6 @@ def insert_historical_quote(request, symbol=None):
                 elif (key == 'Date'):
                     new_historical_quote.Date = obj['Date']
             new_historical_quote.save()
-
             if not new_historical_quote.id:
                 return JsonResponse({'data': 'false'})
             i += 1

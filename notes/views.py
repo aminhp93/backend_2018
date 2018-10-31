@@ -5,10 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import random
 from django.contrib import messages
+import json
 
 
 def get_one_note(request):
-    print(random.randint(1, 101))
     note = Note.objects.first()
     if not note:
         return JsonResponse({'note': 'NO NOTE'})
@@ -31,13 +31,15 @@ def insert_note(request):
 @csrf_exempt
 def update_note(request):
     if request.method == 'POST':
-        print('true')
-        print(request.body, dir(request.body), request.body.decode)
-        note = Note.objects.first()
-        note.content = random.randint(1, 101)
+        str_data = request.body.decode('utf-8')
+        data = json.loads(str_data)
+        print(data['note'])
+        notes = Note.objects.all()
+        if len(notes) == 0:
+            note = Note()
+        else:
+            note = notes[0]
+        note.content = data['note']
         note.save()
-        print(messages)
-        if not note.id:
-            return JsonResponse({'data': 'Insert Failed'})
-        return JsonResponse({'data': 'Insert Successfully'})
+        return JsonResponse({'data': 'Update Successfully'})
     return JsonResponse({'data': 'Invalid request'})
