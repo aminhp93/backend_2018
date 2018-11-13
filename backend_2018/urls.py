@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
-from .views import home
+from .views import home, chat
 from industries import views as industries_views
 from tradingStatistics import views as trading_statistics_views
 from historicalQuotes import views as historical_quotes_views
@@ -43,5 +43,6 @@ urlpatterns = [
          name='historical-quote-insert'),
     path('notes/all', notes_views.get_one_note, name='note-all'),
     path('note/insert', notes_views.insert_note, name='note-insert'),
-    path('note/update', notes_views.update_note, name='note-update')
+    path('note/update', notes_views.update_note, name='note-update'),
+    path('chat', chat, name='chat'),
 ]
