@@ -21,7 +21,7 @@ from .views import home, chat
 from industries import views as industries_views
 from tradingStatistics import views as trading_statistics_views
 from historicalQuotes import views as historical_quotes_views
-
+from posts import views as posts_views
 from notes import views as notes_views
 
 urlpatterns = [
@@ -45,4 +45,7 @@ urlpatterns = [
     path('note/insert', notes_views.insert_note, name='note-insert'),
     path('note/update', notes_views.update_note, name='note-update'),
     path('chat', chat, name='chat'),
+    path('posts/all', posts_views.get_all_posts, name='all-posts'),
+    path('post/create', posts_views.create_post, name='post-create'),
+    path('post/update', posts_views.update_post, name='post-update'),
 ]
