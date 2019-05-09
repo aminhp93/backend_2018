@@ -134,10 +134,10 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-CORS_ORIGIN_WHITELIST = (
-    'localhost:3000',
-    '127.0.0.1:3000'
-)
+# CORS_ORIGIN_WHITELIST = (
+#     'localhost:3000',
+#     '127.0.0.1:3000'
+# )
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -159,6 +159,8 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 RELIC_LICENCE = 'ba8107196204f7310b42e78a18086d9f6cbe49c5'
 django_heroku.settings(locals())
