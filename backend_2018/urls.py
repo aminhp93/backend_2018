@@ -48,4 +48,5 @@ urlpatterns = [
     path('posts/all', posts_views.get_all_posts, name='all-posts'),
     path('post/create', posts_views.create_post, name='post-create'),
     path('post/update', posts_views.update_post, name='post-update'),
+    path('post/delete', posts_views.delete_post, name='post-delete'),
 ]

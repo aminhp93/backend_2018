@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
+import json
 from .models import Post
 
 
@@ -23,12 +24,13 @@ def get_all_posts(request):
 
 @csrf_exempt
 def create_post(request):
-    print(request.POST.dict())
     if request.method == 'POST':
         post = Post()
-        print(post.id)
         post.title = 'title'
-        post.content = request.POST.dict()['data']
+        body = json.loads(request.body.decode('utf-8'))
+        if not 'content' in body:
+            return JsonResponse({'data': 'Invalid data'})
+        post.content = body['content']
         post.save()
         if not post.id:
             return JsonResponse({'data': 'Created failed'})
@@ -43,3 +45,19 @@ def update_post(request):
     if request.method == 'POST':
         return JsonResponse({'data': 'Updated successfully'})
     return JsonResponse({'data': 'Invalid request'})
+
+
+@csrf_exempt
+def delete_post(request):
+    print(52, request.body)
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        print(body)
+        if not 'id' in body:
+            return JsonResponse({'data': 'Invalid data'})
+        search_id = body['id']
+        post = Post.objects.filter(id=search_id).delete()
+        if post[0] == 1:
+            return JsonResponse({'data': 'Deleted successfully'})
+        else:
+            return JsonResponse({'data': 'Deleted failed'})
