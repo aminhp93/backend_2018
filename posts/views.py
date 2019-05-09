@@ -6,15 +6,20 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from .models import Post
 
+
 @csrf_exempt
 def get_all_posts(request):
     all_posts = Post.objects.all()
     print(all_posts)
-    result = {}
+    result = []
     for post in all_posts:
-        result[post.id] = post.content
+        result.append({
+            'id': post.id,
+            'content': post.content
+        })
     print(result)
-    return JsonResponse({'all_posts': result})
+    return JsonResponse({'posts': result})
+
 
 @csrf_exempt
 def create_post(request):
@@ -31,6 +36,7 @@ def create_post(request):
         post.save()
         return JsonResponse({'data': 'Created successfully'})
     return JsonResponse({'data': 'Invalid request'})
+
 
 @csrf_exempt
 def update_post(request):
