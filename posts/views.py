@@ -16,7 +16,8 @@ def get_all_posts(request):
     for post in all_posts:
         result.append({
             'id': post.id,
-            'content': post.content
+            'content': post.content,
+            'is_done': post.is_done
         })
     print(result)
     return JsonResponse({'posts': result})
@@ -43,7 +44,23 @@ def create_post(request):
 @csrf_exempt
 def update_post(request):
     if request.method == 'POST':
-        return JsonResponse({'data': 'Updated successfully'})
+        body = json.loads(request.body.decode('utf-8'))
+        if not 'id' in body:
+            return JsonResponse({'data': 'Invalid data'})
+        search_id = body['id']
+        if 'is_done' in body:
+            filter_posts = Post.objects.filter(id=search_id)
+            if len(filter_posts) == 1:
+                post = filter_posts[0]
+                post.is_done = body['is_done']
+                post.save()
+                return JsonResponse({'data': 'Updated successfully', 'post': {
+                    'id': post.id,
+                    'content': post.content,
+                    'is_done': post.is_done
+                }})
+            return JsonResponse({'data': 'Item not found'})
+        return JsonResponse({'data': 'Invalid request'})
     return JsonResponse({'data': 'Invalid request'})
 
 
