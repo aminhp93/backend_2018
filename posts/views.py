@@ -54,6 +54,8 @@ def update_post(request):
             if len(filter_posts) == 1:
                 post = filter_posts[0]
                 post.is_done = body['is_done']
+                if body['is_done'] == True:
+                    post.is_doing = False
                 post.save()
                 return JsonResponse({'data': 'Updated successfully', 'post': {
                     'id': post.id,
@@ -71,6 +73,19 @@ def update_post(request):
                         item.is_doing = False
                         item.save()
                 post.is_doing = body['is_doing']
+                post.save()
+                return JsonResponse({'data': 'Updated successfully', 'post': {
+                    'id': post.id,
+                    'content': post.content,
+                    'is_done': post.is_done,
+                    'is_doing': post.is_doing
+                }})
+            return JsonResponse({'data': 'Item not found'})
+        if 'content' in body:
+            filter_posts = Post.objects.filter(id=search_id)
+            if len(filter_posts) == 1:
+                post = filter_posts[0]
+                post.content = body['content']
                 post.save()
                 return JsonResponse({'data': 'Updated successfully', 'post': {
                     'id': post.id,
