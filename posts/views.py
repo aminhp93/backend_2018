@@ -17,7 +17,8 @@ def get_all_posts(request):
         result.append({
             'id': post.id,
             'content': post.content,
-            'is_done': post.is_done
+            'is_done': post.is_done,
+            'is_doing': post.is_doing
         })
     print(result)
     return JsonResponse({'posts': result})
@@ -57,7 +58,25 @@ def update_post(request):
                 return JsonResponse({'data': 'Updated successfully', 'post': {
                     'id': post.id,
                     'content': post.content,
-                    'is_done': post.is_done
+                    'is_done': post.is_done,
+                    'is_doing': post.is_doing
+                }})
+            return JsonResponse({'data': 'Item not found'})
+        if 'is_doing' in body:
+            filter_posts = Post.objects.filter(id=search_id)
+            if len(filter_posts) == 1:
+                post = filter_posts[0]
+                if body['is_doing'] == True:
+                    for item in Post.objects.all():
+                        item.is_doing = False
+                        item.save()
+                post.is_doing = body['is_doing']
+                post.save()
+                return JsonResponse({'data': 'Updated successfully', 'post': {
+                    'id': post.id,
+                    'content': post.content,
+                    'is_done': post.is_done,
+                    'is_doing': post.is_doing
                 }})
             return JsonResponse({'data': 'Item not found'})
         return JsonResponse({'data': 'Invalid request'})

@@ -18,6 +18,7 @@ class Post (models.Model):
     update = models.DateTimeField(auto_now=True, auto_now_add=False)
     timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
     read_time = models.TimeField(null=True, blank=True)
+    is_doing = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
