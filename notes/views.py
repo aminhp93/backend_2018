@@ -33,10 +33,11 @@ def insert_note(request):
 
 @csrf_exempt
 def update_note(request):
+    print(request, request.body.decode('utf-8'))
     if request.method == 'POST':
-        str_data = request.body.decode('utf-8')
-        data = json.loads(str_data)
-        print(data['note'])
+        data = json.loads(request.body.decode('utf-8'))
+        if not 'note' in data:
+            return JsonResponse({'data': 'Invalid data'})
         notes = Note.objects.all()
         if len(notes) == 0:
             note = Note()

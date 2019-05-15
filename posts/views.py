@@ -23,6 +23,7 @@ def get_all_posts(request):
         })
     return JsonResponse({'posts': result})
 
+
 @csrf_exempt
 def create_post(request):
     if request.method == 'POST':
@@ -51,6 +52,7 @@ def create_post(request):
 @csrf_exempt
 def update_post(request):
     if request.method == 'POST':
+        print(request, request.body.decode('utf-8'))
         body = json.loads(request.body.decode('utf-8'))
         if not 'id' in body:
             return JsonResponse({'data': 'Invalid data'})
