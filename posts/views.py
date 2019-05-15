@@ -38,7 +38,12 @@ def create_post(request):
             return JsonResponse({'data': 'Created failed'})
         post.title = 'title ' + str(post.id)
         post.save()
-        return JsonResponse({'data': 'Created successfully'})
+        return JsonResponse({'data': 'Created successfully', 'post': {
+            'id': post.id,
+            'content': post.content,
+            'is_done': post.is_done,
+            'is_doing': post.is_doing
+        }})
     return JsonResponse({'data': 'Invalid request'})
 
 
