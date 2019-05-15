@@ -20,6 +20,7 @@ class Post (models.Model):
     read_time = models.TimeField(null=True, blank=True)
     is_doing = models.BooleanField(default=False)
     assignee_id = models.CharField(max_length=120, blank=True)
+    progress_percent = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

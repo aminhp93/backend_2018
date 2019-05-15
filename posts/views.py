@@ -18,7 +18,8 @@ def get_all_posts(request):
             'content': post.content,
             'is_done': post.is_done,
             'is_doing': post.is_doing,
-            'assignee_id': post.assignee_id
+            'assignee_id': post.assignee_id,
+            'progress_percent': post.progress_percent
         })
     return JsonResponse({'posts': result})
 
@@ -41,7 +42,8 @@ def create_post(request):
             'content': post.content,
             'is_done': post.is_done,
             'is_doing': post.is_doing,
-            'assignee_id': post.assignee_id
+            'assignee_id': post.assignee_id,
+            'progress_percent': post.progress_percent
         }})
     return JsonResponse({'data': 'Invalid request'})
 
@@ -66,7 +68,8 @@ def update_post(request):
                     'content': post.content,
                     'is_done': post.is_done,
                     'is_doing': post.is_doing,
-                    'assignee_id': post.assignee_id
+                    'assignee_id': post.assignee_id,
+                    'progress_percent': post.progress_percent
                 }})
             return JsonResponse({'data': 'Item not found'})
         if 'is_doing' in body:
@@ -84,7 +87,8 @@ def update_post(request):
                     'content': post.content,
                     'is_done': post.is_done,
                     'is_doing': post.is_doing,
-                    'assignee_id': post.assignee_id
+                    'assignee_id': post.assignee_id,
+                    'progress_percent': post.progress_percent
                 }})
             return JsonResponse({'data': 'Item not found'})
         if 'content' in body:
@@ -98,7 +102,8 @@ def update_post(request):
                     'content': post.content,
                     'is_done': post.is_done,
                     'is_doing': post.is_doing,
-                    'assignee_id': post.assignee_id
+                    'assignee_id': post.assignee_id,
+                    'progress_percent': post.progress_percent
                 }})
             return JsonResponse({'data': 'Item not found'})
         if 'assignee_id' in body:
@@ -112,7 +117,23 @@ def update_post(request):
                     'content': post.content,
                     'is_done': post.is_done,
                     'is_doing': post.is_doing,
-                    'assignee_id': post.assignee_id
+                    'assignee_id': post.assignee_id,
+                    'progress_percent': post.progress_percent
+                }})
+            return JsonResponse({'data': 'Item not found'})
+        if 'progress_percent' in body:
+            filter_posts = Post.objects.filter(id=search_id)
+            if len(filter_posts) == 1:
+                post = filter_posts[0]
+                post.progress_percent = body['progress_percent']
+                post.save()
+                return JsonResponse({'data': 'Updated successfully', 'post': {
+                    'id': post.id,
+                    'content': post.content,
+                    'is_done': post.is_done,
+                    'is_doing': post.is_doing,
+                    'assignee_id': post.assignee_id,
+                    'progress_percent': post.progress_percent
                 }})
             return JsonResponse({'data': 'Item not found'})
         return JsonResponse({'data': 'Invalid request'})
