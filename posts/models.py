@@ -19,6 +19,7 @@ class Post (models.Model):
     timestamp = models.DateTimeField(auto_now=False, auto_now_add=True)
     read_time = models.TimeField(null=True, blank=True)
     is_doing = models.BooleanField(default=False)
+    assignee_id = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return self.title

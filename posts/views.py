@@ -11,18 +11,16 @@ from .models import Post
 @csrf_exempt
 def get_all_posts(request):
     all_posts = Post.objects.all()
-    print(all_posts)
     result = []
     for post in all_posts:
         result.append({
             'id': post.id,
             'content': post.content,
             'is_done': post.is_done,
-            'is_doing': post.is_doing
+            'is_doing': post.is_doing,
+            'assignee_id': post.assignee_id
         })
-    print(result)
     return JsonResponse({'posts': result})
-
 
 @csrf_exempt
 def create_post(request):
@@ -42,7 +40,8 @@ def create_post(request):
             'id': post.id,
             'content': post.content,
             'is_done': post.is_done,
-            'is_doing': post.is_doing
+            'is_doing': post.is_doing,
+            'assignee_id': post.assignee_id
         }})
     return JsonResponse({'data': 'Invalid request'})
 
@@ -66,7 +65,8 @@ def update_post(request):
                     'id': post.id,
                     'content': post.content,
                     'is_done': post.is_done,
-                    'is_doing': post.is_doing
+                    'is_doing': post.is_doing,
+                    'assignee_id': post.assignee_id
                 }})
             return JsonResponse({'data': 'Item not found'})
         if 'is_doing' in body:
@@ -83,7 +83,8 @@ def update_post(request):
                     'id': post.id,
                     'content': post.content,
                     'is_done': post.is_done,
-                    'is_doing': post.is_doing
+                    'is_doing': post.is_doing,
+                    'assignee_id': post.assignee_id
                 }})
             return JsonResponse({'data': 'Item not found'})
         if 'content' in body:
@@ -96,7 +97,22 @@ def update_post(request):
                     'id': post.id,
                     'content': post.content,
                     'is_done': post.is_done,
-                    'is_doing': post.is_doing
+                    'is_doing': post.is_doing,
+                    'assignee_id': post.assignee_id
+                }})
+            return JsonResponse({'data': 'Item not found'})
+        if 'assignee_id' in body:
+            filter_posts = Post.objects.filter(id=search_id)
+            if len(filter_posts) == 1:
+                post = filter_posts[0]
+                post.assignee_id = body['assignee_id']
+                post.save()
+                return JsonResponse({'data': 'Updated successfully', 'post': {
+                    'id': post.id,
+                    'content': post.content,
+                    'is_done': post.is_done,
+                    'is_doing': post.is_doing,
+                    'assignee_id': post.assignee_id
                 }})
             return JsonResponse({'data': 'Item not found'})
         return JsonResponse({'data': 'Invalid request'})
@@ -105,10 +121,8 @@ def update_post(request):
 
 @csrf_exempt
 def delete_post(request):
-    print(52, request.body)
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
-        print(body)
         if not 'id' in body:
             return JsonResponse({'data': 'Invalid data'})
         search_id = body['id']
