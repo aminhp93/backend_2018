@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tradingStatistics',
     'historicalQuotes',
     'notes',
+    'stocks',
     'corsheaders'
 ]
 

@@ -23,6 +23,7 @@ from tradingStatistics import views as trading_statistics_views
 from historicalQuotes import views as historical_quotes_views
 from posts import views as posts_views
 from notes import views as notes_views
+from stocks import views as stocks_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -49,4 +50,7 @@ urlpatterns = [
     path('post/create', posts_views.create_post, name='post-create'),
     path('post/update', posts_views.update_post, name='post-update'),
     path('post/delete', posts_views.delete_post, name='post-delete'),
+    path('stocks/all', stocks_views.get_all_stocks, name='all-stocks'),
+    path('stock/create', stocks_views.create_stock, name='stock-create')
+
 ]
