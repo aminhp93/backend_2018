@@ -6,17 +6,32 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
 from .models import Stock
-
+import requests
 
 @csrf_exempt
 def get_all_stocks(request):
+    
+
+    url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
+
+    querystring = {"symbol":"AAM"}
+
+    headers = {
+        'cache-control': "no-cache",
+        'postman-token': "8d5daf06-af9e-eb5f-6cf7-c137ac9c9c5e"
+        }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+
+    print(response.text)
     all_stocks = Stock.objects.all()
     result = []
     for stock in all_stocks:
         result.append({
             'id': stock.id,
             'symbol': stock.symbol,
-            'price_data': stock.price_data
+            'price_data': stock.price_data,
+            'financial_data': stock.financial_data            
         })
     return JsonResponse({'stocks': result})
 
@@ -32,13 +47,23 @@ def create_stock(request):
         if not 'price_data' in body:
             return JsonResponse({'data': 'Invalid data'})
         stock.price_data = body['price_data']
+        url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
+        querystring = {"symbol": body['symbol']}
+        headers = {
+            'cache-control': "no-cache",
+            'postman-token': "8d5daf06-af9e-eb5f-6cf7-c137ac9c9c5e"
+            }
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        print(response.text)
+        stock.financial_data = response.text
         stock.save()
         if not stock.id:
             return JsonResponse({'data': 'Created failed'})
         return JsonResponse({'data': 'Created successfully', 'stock': {
             'id': stock.id,
             'symbol': stock.symbol,
-            'price_data': stock.price_data
+            'price_data': stock.price_data,
+            'financial_data': stock.financial_data
         }})
     return JsonResponse({'data': 'Invalid request'})
 
@@ -81,3 +106,10 @@ def create_stock(request):
 #             return JsonResponse({'data': 'Deleted successfully'})
 #         else:
 #             return JsonResponse({'data': 'Deleted failed'})
+
+@csrf_exempt
+def delete_all_stocks(request):
+    if request.method == 'POST':
+        Stock.objects.all().delete()
+        return JsonResponse({ 'data': 'Deleted all stocks successfully'})
+    return JsonResponse({'data': 'Deteled all stocks failed'})
