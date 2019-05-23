@@ -10,20 +10,6 @@ import requests
 
 @csrf_exempt
 def get_all_stocks(request):
-    
-
-    url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
-
-    querystring = {"symbol":"AAM"}
-
-    headers = {
-        'cache-control': "no-cache",
-        'postman-token': "8d5daf06-af9e-eb5f-6cf7-c137ac9c9c5e"
-        }
-
-    response = requests.request("GET", url, headers=headers, params=querystring)
-
-    print(response.text)
     all_stocks = Stock.objects.all()
     result = []
     for stock in all_stocks:
@@ -35,6 +21,17 @@ def get_all_stocks(request):
         })
     return JsonResponse({'stocks': result})
 
+@csrf_exempt
+def get_quick_filtered_stocks(request):
+    filtered_stocks = Stock.objects.filter(volume__gte=10000)
+    result = []
+    for stock in filtered_stocks:
+        result.append({
+            'id': stock.id,
+            'symbol': stock.symbol,
+            'volume': stock.volume
+        })
+    return JsonResponse({'stocks': result})
 
 @csrf_exempt
 def create_stock(request):
@@ -47,6 +44,14 @@ def create_stock(request):
         if not 'price_data' in body:
             return JsonResponse({'data': 'Invalid data'})
         stock.price_data = body['price_data']
+        if 'close' in body:
+            stock.close = body['close']
+        if 'volume' in body:
+            stock.volume = body['volume']
+        if 'RSI_14' in body:
+            stock.RSI_14 = body['RSI_14']
+        if 'RSI_14_diff' in body:
+            stock.RSI_14_diff = body['RSI_14_diff']
         url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
         querystring = {"symbol": body['symbol']}
         headers = {
