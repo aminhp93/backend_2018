@@ -22,7 +22,8 @@ def get_all_stocks(request):
             'RSI_14': stock.RSI_14,
             'RSI_14_diff': stock.RSI_14_diff,
             'ROE': stock.ROE,
-            'EPS': stock.EPS
+            'EPS': stock.EPS,
+            'MarketCapitalization': stock.MarketCapitalization
         })
     return JsonResponse({'stocks': result})
 
@@ -41,7 +42,8 @@ def get_quick_filtered_stocks(request):
             'RSI_14': stock.RSI_14,
             'RSI_14_diff': stock.RSI_14_diff,
             'ROE': stock.ROE,
-            'EPS': stock.EPS
+            'EPS': stock.EPS,
+            'MarketCapitalization': stock.MarketCapitalization
         })
     return JsonResponse({'stocks': result})
 
@@ -93,7 +95,9 @@ def create_stock(request):
             'RSI_14': stock.RSI_14,
             'RSI_14_diff': stock.RSI_14_diff,
             'ROE': stock.ROE,
-            'EPS': stock.EPS
+            'EPS': stock.EPS,
+            'MarketCapitalization': stock.MarketCapitalization
+
         }})
     return JsonResponse({'data': 'Invalid request'})
 
