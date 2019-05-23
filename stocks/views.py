@@ -17,8 +17,12 @@ def get_all_stocks(request):
         result.append({
             'id': stock.id,
             'Symbol': stock.Symbol,
-            'price_data': stock.price_data,
-            'financial_data': stock.financial_data
+            'Close': stock.Close,
+            'Volume': stock.Volume,
+            'RSI_14': stock.RSI_14,
+            'RSI_14_diff': stock.RSI_14_diff,
+            'ROE': stock.ROE,
+            'EPS': stock.EPS
         })
     return JsonResponse({'stocks': result})
 
@@ -26,7 +30,7 @@ def get_all_stocks(request):
 @csrf_exempt
 def get_quick_filtered_stocks(request):
     filtered_stocks = Stock.objects.filter(Q(Volume__gt=10000) & Q(
-        RSI_14__gt=60) & Q(RSI_14__lt=70) & Q(RSI_14_diff__gt=0))
+        RSI_14__gt=60) & Q(RSI_14__lt=70) & Q(RSI_14_diff__gt=0) & Q(ROE__gt=17) & Q(EPS__gt=3000))
     result = []
     for stock in filtered_stocks:
         result.append({
@@ -35,7 +39,9 @@ def get_quick_filtered_stocks(request):
             'Close': stock.Close,
             'Volume': stock.Volume,
             'RSI_14': stock.RSI_14,
-            'RSI_14_diff': stock.RSI_14_diff
+            'RSI_14_diff': stock.RSI_14_diff,
+            'ROE': stock.ROE,
+            'EPS': stock.EPS
         })
     return JsonResponse({'stocks': result})
 
@@ -67,7 +73,14 @@ def create_stock(request):
         }
         response = requests.request(
             "GET", url, headers=headers, params=querystring)
-        print(response.text)
+        if response.text != 'null':
+            latestFinancialData = json.loads(response.text)
+            if 'ROE' in latestFinancialData and type(latestFinancialData['ROE']) == float:
+                stock.ROE = latestFinancialData['ROE'] * 100
+            if 'EPS' in latestFinancialData and type(latestFinancialData['EPS']) == float:
+                stock.EPS = latestFinancialData['EPS']
+            if 'MarketCapitalization' in latestFinancialData and type(latestFinancialData['MarketCapitalization']) == float:
+                stock.MarketCapitalization = latestFinancialData['MarketCapitalization'] / 10**9
         stock.financial_data = response.text
         stock.save()
         if not stock.id:
@@ -75,8 +88,12 @@ def create_stock(request):
         return JsonResponse({'data': 'Created successfully', 'stock': {
             'id': stock.id,
             'Symbol': stock.Symbol,
-            'price_data': stock.price_data,
-            'financial_data': stock.financial_data
+            'Close': stock.Close,
+            'Volume': stock.Volume,
+            'RSI_14': stock.RSI_14,
+            'RSI_14_diff': stock.RSI_14_diff,
+            'ROE': stock.ROE,
+            'EPS': stock.EPS
         }})
     return JsonResponse({'data': 'Invalid request'})
 
