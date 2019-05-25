@@ -27,10 +27,17 @@ def get_all_jobs(request):
 
 @csrf_exempt
 def get_last_job(request):
-    filtered_jobs = Job.objects.filter(searchWord='').order_by('-timestamp')
-    if len(filtered_jobs) == 0:
-        return JsonResponse({'job': ''})
-    return JsonResponse({'job': get_default_attributes(filtered_jobs[0])})
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        if not 'searchWord' in body:
+            return JsonResponse({'data': "Invalid data"})
+        searchWord = body['searchWord']
+        filtered_jobs = Job.objects.filter(
+            searchWord=searchWord).order_by('-timestamp')
+        if len(filtered_jobs) == 0:
+            return JsonResponse({'job': ''})
+        return JsonResponse({'job': get_default_attributes(filtered_jobs[0])})
+    return JsonResponse({'data': 'Invalid request'})
 
 
 @csrf_exempt
