@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'historicalQuotes',
     'notes',
     'stocks',
+    'jobs',
     'corsheaders'
 ]
 
@@ -165,3 +166,5 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 RELIC_LICENCE = 'ba8107196204f7310b42e78a18086d9f6cbe49c5'
 django_heroku.settings(locals())
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20000000

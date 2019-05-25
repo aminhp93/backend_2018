@@ -1,12 +1,10 @@
 from django.shortcuts import render
 from django.db.models import Q
-# Create your views here.
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
 from .models import Stock
-import requests
 
 
 @csrf_exempt

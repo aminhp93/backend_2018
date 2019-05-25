@@ -24,6 +24,7 @@ from historicalQuotes import views as historical_quotes_views
 from posts import views as posts_views
 from notes import views as notes_views
 from stocks import views as stocks_views
+from jobs import views as jobs_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,6 +53,13 @@ urlpatterns = [
     path('post/delete', posts_views.delete_post, name='post-delete'),
     path('stocks/all', stocks_views.get_all_stocks, name='all-stocks'),
     path('stock/create', stocks_views.create_stock, name='stock-create'),
-    path('stock/delete/all', stocks_views.delete_all_stocks, name='stock-delete-all'),
-    path('stocks/quickFilteredStocks', stocks_views.get_quick_filtered_stocks, name='quick-filtered-stocks')
+    path('stock/delete/all', stocks_views.delete_all_stocks,
+         name='stock-delete-all'),
+    path('stocks/quickFilteredStocks',
+         stocks_views.get_quick_filtered_stocks, name='quick-filtered-stocks'),
+    path('jobs/all', jobs_views.get_all_jobs, name='all-jobs'),
+    path('job/create', jobs_views.create_job, name='job-create'),
+    path('job/update', jobs_views.update_job, name='job-update'),
+    path('job/lastjob', jobs_views.get_last_job, name='get-last-job')
+
 ]
