@@ -57,6 +57,7 @@ urlpatterns = [
          name='stock-delete-all'),
     path('stocks/quickFilteredStocks',
          stocks_views.get_quick_filtered_stocks, name='quick-filtered-stocks'),
+    path('stocks/filter', stocks_views.filter_stock, name='stock-filter'),
     path('jobs/all', jobs_views.get_all_jobs, name='all-jobs'),
     path('job/create', jobs_views.create_job, name='job-create'),
     path('job/update', jobs_views.update_job, name='job-update'),

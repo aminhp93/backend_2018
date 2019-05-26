@@ -7,22 +7,26 @@ import json
 from .models import Stock
 
 
+def get_default_attributes(data):
+    return {
+        'id': data.id,
+        'Symbol': data.Symbol,
+        'Close': data.Close,
+        'Volume': data.Volume,
+        'RSI_14': data.RSI_14,
+        'RSI_14_diff': data.RSI_14_diff,
+        'ROE': data.ROE,
+        'EPS': data.EPS,
+        'MarketCapitalization': data.MarketCapitalization
+    }
+
+
 @csrf_exempt
 def get_all_stocks(request):
     all_stocks = Stock.objects.all()
     result = []
     for stock in all_stocks:
-        result.append({
-            'id': stock.id,
-            'Symbol': stock.Symbol,
-            'Close': stock.Close,
-            'Volume': stock.Volume,
-            'RSI_14': stock.RSI_14,
-            'RSI_14_diff': stock.RSI_14_diff,
-            'ROE': stock.ROE,
-            'EPS': stock.EPS,
-            'MarketCapitalization': stock.MarketCapitalization
-        })
+        result.append(get_default_attributes(stock))
     return JsonResponse({'stocks': result})
 
 
@@ -32,18 +36,22 @@ def get_quick_filtered_stocks(request):
         RSI_14__gt=60) & Q(RSI_14__lt=70) & Q(RSI_14_diff__gt=0) & Q(ROE__gt=17) & Q(EPS__gt=3000))
     result = []
     for stock in filtered_stocks:
-        result.append({
-            'id': stock.id,
-            'Symbol': stock.Symbol,
-            'Close': stock.Close,
-            'Volume': stock.Volume,
-            'RSI_14': stock.RSI_14,
-            'RSI_14_diff': stock.RSI_14_diff,
-            'ROE': stock.ROE,
-            'EPS': stock.EPS,
-            'MarketCapitalization': stock.MarketCapitalization
-        })
+        result.append(get_default_attributes(stock))
     return JsonResponse({'stocks': result})
+
+
+@csrf_exempt
+def filter_stock(request):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        result = []
+        if 'watching_stocks' in body:
+            watching_stocks = body['watching_stocks']
+            filtered_stocks = Stock.objects.filter(Symbol__in=watching_stocks)
+            for stock in filtered_stocks:
+                result.append(get_default_attributes(stock))
+        return JsonResponse({'stocks': result})
+    return JsonResponse({'data': 'Invalid request'})
 
 
 @csrf_exempt
