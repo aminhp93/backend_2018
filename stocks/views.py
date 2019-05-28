@@ -17,7 +17,10 @@ def get_default_attributes(data):
         'RSI_14_diff': data.RSI_14_diff,
         'ROE': data.ROE,
         'EPS': data.EPS,
-        'MarketCapitalization': data.MarketCapitalization
+        'MarketCapitalization': data.MarketCapitalization,
+        'today_capitalization': data.today_capitalization,
+        'percentage_change_in_price': data.percentage_change_in_price,
+        'percentage_change_in_volume': data.percentage_change_in_volume,
     }
 
 
@@ -98,6 +101,12 @@ def create_stock(request):
             stock.RSI_14 = body['RSI_14']
         if 'RSI_14_diff' in body:
             stock.RSI_14_diff = body['RSI_14_diff']
+        if 'today_capitalization' in body:
+            stock.today_capitalization = body['today_capitalization']
+        if 'percentage_change_in_volume' in body:
+            stock.percentage_change_in_volume = body['percentage_change_in_volume']
+        if 'percentage_change_in_price' in body:
+            stock.percentage_change_in_price = body['percentage_change_in_price']
         url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
         querystring = {"symbol": body['Symbol']}
         headers = {
@@ -118,18 +127,7 @@ def create_stock(request):
         stock.save()
         if not stock.id:
             return JsonResponse({'data': 'Created failed'})
-        return JsonResponse({'data': 'Created successfully', 'stock': {
-            'id': stock.id,
-            'Symbol': stock.Symbol,
-            'Close': stock.Close,
-            'Volume': stock.Volume,
-            'RSI_14': stock.RSI_14,
-            'RSI_14_diff': stock.RSI_14_diff,
-            'ROE': stock.ROE,
-            'EPS': stock.EPS,
-            'MarketCapitalization': stock.MarketCapitalization
-
-        }})
+        return JsonResponse({'data': 'Created successfully', 'stock': get_default_attributes(stock)})
     return JsonResponse({'data': 'Invalid request'})
 
 # @csrf_exempt

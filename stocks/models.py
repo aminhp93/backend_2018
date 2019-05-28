@@ -14,6 +14,9 @@ class Stock(models.Model):
     RSI_14 = models.FloatField(null=True)
     RSI_14_diff = models.FloatField(null=True)
     MarketCapitalization = models.FloatField(null=True)
+    today_capitalization = models.FloatField(null=True)
+    percentage_change_in_price = models.FloatField(null=True)
+    percentage_change_in_volume = models.FloatField(null=True)
 
     def __str__(self):
         return self.Symbol
