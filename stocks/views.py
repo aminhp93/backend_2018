@@ -50,6 +50,31 @@ def filter_stock(request):
             filtered_stocks = Stock.objects.filter(Symbol__in=watching_stocks)
             for stock in filtered_stocks:
                 result.append(get_default_attributes(stock))
+            return JsonResponse({'stocks': result})
+        Volume_min = 0
+        RSI_14_max = 1000000
+        RSI_14_min = 0
+        RSI_14_diff_min = 0
+        ROE_min = 0
+        EPS_min = 0
+        if 'Volume_min' in body:
+            Volume_min = body['Volume_min']
+        if 'RSI_14_max' in body:
+            RSI_14_max = body['RSI_14_max']
+        if 'RSI_14_min' in body:
+            RSI_14_min = body['RSI_14_min']
+        if 'RSI_14_diff_min' in body:
+            RSI_14_diff_min = body['RSI_14_diff_min']
+        if 'ROE_min' in body:
+            ROE_min = body['ROE_min']
+        if 'EPS_min' in body:
+            EPS_min = body['EPS_min']
+        print(Volume_min, RSI_14_max, RSI_14_min,
+              RSI_14_diff_min, ROE_min, EPS_min)
+        filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
+            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min))
+        for stock in filtered_stocks:
+            result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
     return JsonResponse({'data': 'Invalid request'})
 

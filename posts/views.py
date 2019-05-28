@@ -16,13 +16,14 @@ def get_default_attributes(obj):
         'default_cost': obj.default_cost,
         'actual_cost': obj.actual_cost,
         'update': obj.update,
-        'timestamp': obj.timestamp
+        'timestamp': obj.timestamp,
+        'scheduled_time': obj.scheduled_time
     }
 
 
 @csrf_exempt
 def get_all_posts(request):
-    all_posts = Post.objects.all()
+    all_posts = Post.objects.all().order_by('scheduled_time')
     result = []
     for post in all_posts:
         result.append(get_default_attributes(post))
@@ -82,6 +83,11 @@ def update_post(request):
             if 'actual_cost' in body:
                 try:
                     post.actual_cost = float(body['actual_cost'])
+                except ValueError:
+                    return JsonResponse({'data': 'Invalid type data'})
+            if 'scheduled_time' in body:
+                try:
+                    post.scheduled_time = float(body['scheduled_time'])
                 except ValueError:
                     return JsonResponse({'data': 'Invalid type data'})
             post.save()
