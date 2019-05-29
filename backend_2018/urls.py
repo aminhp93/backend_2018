@@ -62,6 +62,6 @@ urlpatterns = [
     path('jobs/all', jobs_views.get_all_jobs, name='all-jobs'),
     path('job/create', jobs_views.create_job, name='job-create'),
     path('job/update', jobs_views.update_job, name='job-update'),
-    path('job/lastjob', jobs_views.get_last_job, name='get-last-job')
-
+    path('job/lastjob', jobs_views.get_last_job, name='get-last-job'),
+    url(r'^api/posts/', include('posts.api.urls', namespace='posts-api')),
 ]
