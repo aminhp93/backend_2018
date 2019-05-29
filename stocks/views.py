@@ -130,32 +130,24 @@ def create_stock(request):
         return JsonResponse({'data': 'Created successfully', 'stock': get_default_attributes(stock)})
     return JsonResponse({'data': 'Invalid request'})
 
-# @csrf_exempt
-# def update_stock(request):
-#     if request.method == 'POST':
-#         body = json.loads(request.body.decode('utf-8'))
-#         if not 'id' in body:
-#             return JsonResponse({'data': 'Invalid data'})
-#         search_id = body['id']
-#         if 'is_done' in body:
-#             filter_posts = Post.objects.filter(id=search_id)
-#             if len(filter_posts) == 1:
-#                 post = filter_posts[0]
-#                 post.is_done = body['is_done']
-#                 if body['is_done'] == True:
-#                     post.is_doing = False
-#                 post.save()
-#                 return JsonResponse({'data': 'Updated successfully', 'post': {
-#                     'id': post.id,
-#                     'content': post.content,
-#                     'is_done': post.is_done,
-#                     'is_doing': post.is_doing,
-#                     'assignee_id': post.assignee_id,
-#                     'progress_percent': post.progress_percent
-#                 }})
-#             return JsonResponse({'data': 'Item not found'})
-#         return JsonResponse({'data': 'Invalid request'})
-#     return JsonResponse({'data': 'Invalid request'})
+@csrf_exempt
+def update_stock(request):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        if not 'Symbol' in body:
+            return JsonResponse({'data': 'Invalid data'})
+        search_symbol = body['Symbol']
+        filter_symbols = Post.objects.filter(Symbol=search_symbol)
+        if len(filter_symbols) == 1:
+            symbol = filter_symbols[0]
+            if 'Volume' in body:
+                symbol.Volume = body['Volume']
+            if 'Close' in body:
+                symbol.Close = body['Close']
+            symbol.save()
+            return JsonResponse({'data': 'Updated successfully', 'post': get_default_attributes(symbol)})
+        return JsonResponse({'data': 'Item not found'})
+    return JsonResponse({'data': 'Invalid request'})
 
 # @csrf_exempt
 # def delete_post(request):

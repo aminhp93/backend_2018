@@ -53,6 +53,7 @@ urlpatterns = [
     path('post/delete', posts_views.delete_post, name='post-delete'),
     path('stocks/all', stocks_views.get_all_stocks, name='all-stocks'),
     path('stock/create', stocks_views.create_stock, name='stock-create'),
+    path('stock/update', stocks_views.update_stock, name='stock-update'),
     path('stock/delete/all', stocks_views.delete_all_stocks,
          name='stock-delete-all'),
     path('stocks/quickFilteredStocks',
