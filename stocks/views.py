@@ -60,6 +60,8 @@ def filter_stock(request):
         RSI_14_diff_min = 0
         ROE_min = 0
         EPS_min = 0
+        today_capitalization_min = 0
+        percentage_change_in_price_min = -99999999
         if 'Volume_min' in body:
             Volume_min = body['Volume_min']
         if 'RSI_14_max' in body:
@@ -72,10 +74,18 @@ def filter_stock(request):
             ROE_min = body['ROE_min']
         if 'EPS_min' in body:
             EPS_min = body['EPS_min']
-        print(Volume_min, RSI_14_max, RSI_14_min,
-              RSI_14_diff_min, ROE_min, EPS_min)
+        if 'today_capitalization_min' in body:
+            today_capitalization_min = body['today_capitalization_min']
+        if 'percentage_change_in_price_min' in body:
+            percentage_change_in_price_min = body['percentage_change_in_price_min']
         filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
-            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min))
+            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
+                RSI_14_diff__gt=RSI_14_diff_min) & Q(
+                    ROE__gt=ROE_min) & Q(
+                        EPS__gt=EPS_min) & Q(
+                            today_capitalization__gt=today_capitalization_min) & Q(
+                                percentage_change_in_price__gt=percentage_change_in_price_min)
+                        ).order_by('-today_capitalization')
         for stock in filtered_stocks:
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
