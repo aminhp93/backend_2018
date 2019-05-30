@@ -58,11 +58,14 @@ def filter_stock(request):
         Volume_min = 0
         RSI_14_max = 1000000
         RSI_14_min = 0
-        RSI_14_diff_min = 0
+        RSI_14_diff_min = -999999999
         ROE_min = 0
         EPS_min = 0
         today_capitalization_min = 0
         percentage_change_in_price_min = -99999999
+        Symbol_search = ''
+        if 'Symbol_search' in body:
+            Symbol_search = body['Symbol_search']
         if 'Volume_min' in body:
             Volume_min = body['Volume_min']
         if 'RSI_14_max' in body:
@@ -79,14 +82,8 @@ def filter_stock(request):
             today_capitalization_min = body['today_capitalization_min']
         if 'percentage_change_in_price_min' in body:
             percentage_change_in_price_min = body['percentage_change_in_price_min']
-        filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
-            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
-                RSI_14_diff__gt=RSI_14_diff_min) & Q(
-                    ROE__gt=ROE_min) & Q(
-                        EPS__gt=EPS_min) & Q(
-                            today_capitalization__gt=today_capitalization_min) & Q(
-                                percentage_change_in_price__gt=percentage_change_in_price_min)
-                        ).order_by('-today_capitalization')
+        print(Symbol_search)
+        filtered_stocks = Stock.objects.filter(Symbol='VHM').filter(Q(Volume__gt=Volume_min) & Q(RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min) & Q(today_capitalization__gt=today_capitalization_min) & Q(percentage_change_in_price__gt=percentage_change_in_price_min) & Q(Symbol__regex=r'{0}'.format(Symbol_search))).order_by('-today_capitalization')
         for stock in filtered_stocks:
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
