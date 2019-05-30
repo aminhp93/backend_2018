@@ -11,6 +11,7 @@ def get_default_attributes(data):
     return {
         'id': data.id,
         'Symbol': data.Symbol,
+        'yesterday_Close': data.yesterday_Close,
         'Close': data.Close,
         'Volume': data.Volume,
         'RSI_14': data.RSI_14,
@@ -103,6 +104,8 @@ def create_stock(request):
         if not 'price_data' in body:
             return JsonResponse({'data': 'Invalid data'})
         stock.price_data = body['price_data']
+        if 'yesterday_Close' in body:
+            stock.yesterday_Close = body['yesterday_Close']
         if 'Close' in body:
             stock.Close = body['Close']
         if 'Volume' in body:
@@ -154,6 +157,10 @@ def update_stock(request):
                 symbol.Volume = body['Volume']
             if 'Close' in body:
                 symbol.Close = body['Close']
+            if 'today_capitalization' in body:
+                symbol.today_capitalization = body['today_capitalization']
+            if 'percentage_change_in_price' in body:
+                symbol.percentage_change_in_price = body['percentage_change_in_price']
             symbol.save()
             Volume_min = 0
             RSI_14_max = 1000000

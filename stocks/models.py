@@ -8,6 +8,7 @@ class Stock(models.Model):
     price_data = models.TextField(null=True)
     financial_data = models.TextField(null=True)
     Close = models.FloatField(null=True)
+    yesterday_Close = models.FloatField(null=True)
     ROE = models.FloatField(null=True)
     EPS = models.FloatField(null=True)
     Volume = models.FloatField(null=True)
