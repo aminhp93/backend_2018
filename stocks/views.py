@@ -147,7 +147,7 @@ def update_stock(request):
         if not 'Symbol' in body:
             return JsonResponse({'data': 'Invalid data'})
         search_symbol = body['Symbol']
-        filter_symbols = Post.objects.filter(Symbol=search_symbol)
+        filter_symbols = Stock.objects.filter(Symbol=search_symbol)
         if len(filter_symbols) == 1:
             symbol = filter_symbols[0]
             if 'Volume' in body:
@@ -155,7 +155,26 @@ def update_stock(request):
             if 'Close' in body:
                 symbol.Close = body['Close']
             symbol.save()
-            return JsonResponse({'data': 'Updated successfully', 'post': get_default_attributes(symbol)})
+            Volume_min = 0
+            RSI_14_max = 1000000
+            RSI_14_min = 0
+            RSI_14_diff_min = 0
+            ROE_min = 0
+            EPS_min = 0
+            today_capitalization_min = 5000000000
+            percentage_change_in_price_min = 0.01
+            filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
+            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
+                RSI_14_diff__gt=RSI_14_diff_min) & Q(
+                    ROE__gt=ROE_min) & Q(
+                        EPS__gt=EPS_min) & Q(
+                            today_capitalization__gt=today_capitalization_min) & Q(
+                                percentage_change_in_price__gt=percentage_change_in_price_min)
+                        ).order_by('-today_capitalization')
+            result = []
+            for stock_item in filtered_stocks:
+                result.append(get_default_attributes(stock_item))    
+            return JsonResponse({'data': 'Updated successfully', 'stock': get_default_attributes(symbol), 'stocks': result})
         return JsonResponse({'data': 'Item not found'})
     return JsonResponse({'data': 'Invalid request'})
 
