@@ -1,11 +1,12 @@
 from django.shortcuts import render
-
+import time
 # Create your views here.
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
 from .models import Post
+from django.db.models import Q
 
 
 def get_default_attributes(obj):
@@ -17,13 +18,16 @@ def get_default_attributes(obj):
         'actual_cost': obj.actual_cost,
         'update': obj.update,
         'timestamp': obj.timestamp,
-        'scheduled_time': obj.scheduled_time
+        'scheduled_time': obj.scheduled_time,
+        'done_time': obj.done_time
     }
 
 
 @csrf_exempt
 def get_all_posts(request):
-    all_posts = Post.objects.all().order_by('scheduled_time')
+    yesterday_miliseconds = time.time()*1000 - 86400000
+    all_posts = Post.objects.all().exclude(Q(is_done=True) & Q(
+        done_time__lt=yesterday_miliseconds)).order_by('scheduled_time')
     result = []
     for post in all_posts:
         result.append(get_default_attributes(post))
@@ -63,6 +67,8 @@ def update_post(request):
                 post.is_done = body['is_done']
                 if body['is_done'] == True:
                     post.is_doing = False
+            if 'done_time' in body:
+                post.done_time = body['done_time']
             if 'is_doing' in body:
                 if body['is_doing'] == True:
                     for item in Post.objects.all():
@@ -87,9 +93,14 @@ def update_post(request):
                     return JsonResponse({'data': 'Invalid type data'})
             if 'scheduled_time' in body:
                 try:
-                    post.scheduled_time = float(body['scheduled_time'])
+                    post.scheduled_time = round(
+                        float(body['scheduled_time']), 2)
                 except ValueError:
                     return JsonResponse({'data': 'Invalid type data'})
+                a = Post.objects.filter(scheduled_time=post.scheduled_time)
+                while len(a) > 0:
+                    post.scheduled_time = round(post.scheduled_time + 0.01, 2)
+                    a = Post.objects.filter(scheduled_time=post.scheduled_time)
             post.save()
             return JsonResponse({'data': 'Updated successfully', 'post': get_default_attributes(post)})
         return JsonResponse({'data': 'Item not found'})
