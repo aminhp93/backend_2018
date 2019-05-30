@@ -9,7 +9,7 @@ import json
 def get_default_attributes(data):
     return {
         'id': data.id,
-        'timestamp': data.timestamp,
+        'time': data.time,
         'searchWord': data.searchWord,
         'content': data.content
     }
@@ -33,7 +33,7 @@ def get_last_job(request):
             return JsonResponse({'data': "Invalid data"})
         searchWord = body['searchWord']
         filtered_jobs = Job.objects.filter(
-            searchWord=searchWord).order_by('-timestamp')
+            searchWord=searchWord).order_by('-time')
         if len(filtered_jobs) == 0:
             return JsonResponse({'job': ''})
         return JsonResponse({'job': get_default_attributes(filtered_jobs[0])})
@@ -45,9 +45,9 @@ def create_job(request):
     if request.method == 'POST':
         job = Job()
         body = json.loads(request.body.decode('utf-8'))
-        if not 'timestamp' in body:
+        if not 'time' in body:
             return JsonResponse({'data': "Invalid data"})
-        job.timestamp = body['timestamp']
+        job.time = body['time']
         if 'searchWord' in body:
             job.searchWord = body['searchWord']
         if 'content' in body:
@@ -71,8 +71,8 @@ def update_job(request):
             job = filter_jobs[0]
             if 'content' in body:
                 job.content = body['content']
-            if 'timestamp' in body:
-                job.timestamp = body['timestamp']
+            if 'time' in body:
+                job.time = body['time']
             job.save()
             return JsonResponse({'data': 'Updated successfully', 'job': get_default_attributes(job)})
         return JsonResponse({'data': 'Item not found'})
