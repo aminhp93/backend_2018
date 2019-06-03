@@ -23,7 +23,7 @@ class Post (models.Model):
     progress_percent = models.IntegerField(default=0)
     default_cost = models.FloatField(null=True)
     actual_cost = models.FloatField(null=True)
-    scheduled_time = models.FloatField(null=True)
+    # scheduled_time = models.FloatField(null=True)
     done_time = models.FloatField(null=True)
 
     def __str__(self):
