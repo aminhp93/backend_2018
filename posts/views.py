@@ -27,8 +27,7 @@ def get_default_attributes(obj):
 def get_all_posts(request):
     yesterday_miliseconds = time.time()*1000 - 86400000
     all_posts = Post.objects.all().exclude(Q(is_done=True) & Q(
-        done_time__lt=yesterday_miliseconds))
-        .order_by('scheduled_time')
+        done_time__lt=yesterday_miliseconds)).order_by('scheduled_time')
     result = []
     for post in all_posts:
         result.append(get_default_attributes(post))
