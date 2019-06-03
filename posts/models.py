@@ -30,5 +30,5 @@ class Post (models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.scheduled_time = round(self.scheduled_time, 2)
+        # self.scheduled_time = round(self.scheduled_time, 2)
         super(Post, self).save(*args, **kwargs)
