@@ -23,12 +23,12 @@ class Post (models.Model):
     progress_percent = models.IntegerField(default=0)
     default_cost = models.FloatField(null=True)
     actual_cost = models.FloatField(null=True)
-    # scheduled_time = models.FloatField(null=True)
+    scheduled_time = models.FloatField(null=True)
     done_time = models.FloatField(null=True)
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        # self.scheduled_time = round(self.scheduled_time, 2)
+        self.scheduled_time = round(self.scheduled_time, 2)
         super(Post, self).save(*args, **kwargs)
