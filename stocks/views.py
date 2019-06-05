@@ -166,6 +166,17 @@ def update_stock(request):
             EPS_min = 0
             today_capitalization_min = 5000000000
             percentage_change_in_price_min = 0.01
+            check_filtered_symbol = Stock.objects.filter(Q(id=symbol.id) & Q(Volume__gt=Volume_min) & Q(
+            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
+                RSI_14_diff__gt=RSI_14_diff_min) & Q(
+                    ROE__gt=ROE_min) & Q(
+                        EPS__gt=EPS_min) & Q(
+                            today_capitalization__gt=today_capitalization_min) & Q(
+                                percentage_change_in_price__gt=percentage_change_in_price_min)
+                        ).order_by('-today_capitalization')
+            # print(len(check_filtered_symbol) == 0)
+            if len(check_filtered_symbol) == 0:
+                return JsonResponse({'data': 'Updated successfully'})
             filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
             RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
                 RSI_14_diff__gt=RSI_14_diff_min) & Q(
