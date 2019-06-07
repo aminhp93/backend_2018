@@ -26,5 +26,5 @@ def home(request):
 
 
 def chat(request):
-    print(dir(sio))
+    # print(dir(sio))
     return JsonResponse({'data': 'chat'})

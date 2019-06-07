@@ -46,7 +46,7 @@ urlpatterns = [
     path('notes/all', notes_views.get_one_note, name='note-all'),
     path('note/insert', notes_views.insert_note, name='note-insert'),
     path('note/update', notes_views.update_note, name='note-update'),
-    path('chat', chat, name='chat'),
+#     path('chat', chat, name='chat'),
     path('posts/all', posts_views.get_all_posts, name='all-posts'),
     path('post/create', posts_views.create_post, name='post-create'),
     path('post/update', posts_views.update_post, name='post-update'),
@@ -64,4 +64,5 @@ urlpatterns = [
     path('job/update', jobs_views.update_job, name='job-update'),
     path('job/lastjob', jobs_views.get_last_job, name='get-last-job'),
     url(r'^api/posts/', include('posts.api.urls', namespace='posts-api')),
+    url(r'^chat/', include('chat.urls')),
 ]

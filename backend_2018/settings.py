@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'notes',
     'stocks',
     'jobs',
-    'corsheaders'
+    'chat',
+    'corsheaders',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -168,3 +170,13 @@ RELIC_LICENCE = 'ba8107196204f7310b42e78a18086d9f6cbe49c5'
 django_heroku.settings(locals())
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20000000
+
+ASGI_APPLICATION = 'backend_2018.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
