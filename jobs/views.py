@@ -10,7 +10,7 @@ def get_default_attributes(data):
     return {
         'id': data.id,
         # 'time': data.time,
-        # 'searchWord': data.searchWord,
+        'searchWord': data.searchWord,
         'content': data.content
     }
 # Create your views here.
@@ -18,10 +18,7 @@ def get_default_attributes(data):
 
 @csrf_exempt
 def job_list(request):
-    # return JsonResponse({})
     all_jobs = Job.objects.all()
-    # print(111, all_jobs)
-    # return JsonResponse({})
     result = []
     for job in all_jobs:
         result.append(get_default_attributes(job))

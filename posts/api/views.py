@@ -13,24 +13,31 @@ from .serializers import (
     PostCreateUpdateSerializer
 )
 
+from .pagination import PostPageNumberPagination
+
+
 class PostListAPIView(ListAPIView):
     serializer_class = PostListSerializer
     queryset = Post.objects.all()
+    pagination_class = PostPageNumberPagination
+
 
 class PostDetailAPIView(RetrieveAPIView):
     serializer_class = PostDetailSerializer
     queryset = Post.objects.all()
     # lookup_field = 'id'
 
+
 class PostCreateAPIView(CreateAPIView):
     serializer_class = PostCreateUpdateSerializer
     queryset = Post.objects.all()
+
 
 class PostUpdateAPIView(RetrieveUpdateAPIView):
     serializer_class = PostCreateUpdateSerializer
     queryset = Post.objects.all()
 
+
 class PostDestroyAPIView(DestroyAPIView):
     serializer_class = PostDetailSerializer
     queryset = Post.objects.all()
-
