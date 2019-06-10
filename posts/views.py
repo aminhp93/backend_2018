@@ -14,6 +14,7 @@ def get_default_attributes(obj):
         'id': obj.id,
         'content': obj.content,
         'is_done': obj.is_done,
+        'is_doing': obj.is_doing,
         'default_cost': obj.default_cost,
         'actual_cost': obj.actual_cost,
         'update': obj.update,
