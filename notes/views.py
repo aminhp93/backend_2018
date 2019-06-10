@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from .models import Note
-# Create your views here.
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import random
@@ -9,7 +8,7 @@ import json
 
 
 @csrf_exempt
-def get_one_note(request):
+def note_list(request):
     note = Note.objects.first()
     if not note:
         note = Note()
@@ -19,7 +18,7 @@ def get_one_note(request):
 
 
 @csrf_exempt
-def insert_note(request):
+def note_create(request):
     if request.method == 'POST':
         print('true')
         note = Note()
@@ -32,7 +31,12 @@ def insert_note(request):
 
 
 @csrf_exempt
-def update_note(request):
+def note_detail(request, pk):
+    return JsonResponse({'data': 'detail'})
+
+
+@csrf_exempt
+def note_update(request, pk):
     print(request, request.body.decode('utf-8'))
     if request.method == 'POST':
         data = json.loads(request.body.decode('utf-8'))
@@ -46,4 +50,11 @@ def update_note(request):
         note.content = data['note']
         note.save()
         return JsonResponse({'data': 'Update Successfully'})
+    return JsonResponse({'data': 'Invalid request'})
+
+
+@csrf_exempt
+def note_delete(request, pk):
+    if request.method == 'POST':
+        return JsonResponse({'data': 'delete'})
     return JsonResponse({'data': 'Invalid request'})

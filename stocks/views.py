@@ -26,7 +26,7 @@ def get_default_attributes(data):
 
 
 @csrf_exempt
-def get_all_stocks(request):
+def stock_list(request):
     all_stocks = Stock.objects.all()
     result = []
     for stock in all_stocks:
@@ -35,62 +35,7 @@ def get_all_stocks(request):
 
 
 @csrf_exempt
-def get_quick_filtered_stocks(request):
-    filtered_stocks = Stock.objects.filter(Q(Volume__gt=10000) & Q(
-        RSI_14__gt=60) & Q(RSI_14__lt=70) & Q(RSI_14_diff__gt=0) & Q(ROE__gt=17) & Q(EPS__gt=3000))
-    result = []
-    for stock in filtered_stocks:
-        result.append(get_default_attributes(stock))
-    return JsonResponse({'stocks': result})
-
-
-@csrf_exempt
-def filter_stock(request):
-    if request.method == 'POST':
-        body = json.loads(request.body.decode('utf-8'))
-        result = []
-        if 'watching_stocks' in body:
-            watching_stocks = body['watching_stocks']
-            filtered_stocks = Stock.objects.filter(Symbol__in=watching_stocks)
-            for stock in filtered_stocks:
-                result.append(get_default_attributes(stock))
-            return JsonResponse({'stocks': result})
-        Volume_min = 0
-        RSI_14_max = 1000000
-        RSI_14_min = -99999999
-        RSI_14_diff_min = -99999999
-        ROE_min = -99999999
-        EPS_min = -99999999
-        today_capitalization_min = 0
-        percentage_change_in_price_min = -99999999
-        Symbol_search = ''
-        if 'Symbol_search' in body:
-            Symbol_search = body['Symbol_search']
-        if 'Volume_min' in body:
-            Volume_min = body['Volume_min']
-        if 'RSI_14_max' in body:
-            RSI_14_max = body['RSI_14_max']
-        if 'RSI_14_min' in body:
-            RSI_14_min = body['RSI_14_min']
-        if 'RSI_14_diff_min' in body:
-            RSI_14_diff_min = body['RSI_14_diff_min']
-        if 'ROE_min' in body:
-            ROE_min = body['ROE_min']
-        if 'EPS_min' in body:
-            EPS_min = body['EPS_min']
-        if 'today_capitalization_min' in body:
-            today_capitalization_min = body['today_capitalization_min']
-        if 'percentage_change_in_price_min' in body:
-            percentage_change_in_price_min = body['percentage_change_in_price_min']
-        filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min) & Q(today_capitalization__gt=today_capitalization_min) & Q(percentage_change_in_price__gt=percentage_change_in_price_min) & Q(Symbol__regex=r'{0}'.format(Symbol_search))).order_by('-today_capitalization')
-        for stock in filtered_stocks:
-            result.append(get_default_attributes(stock))
-        return JsonResponse({'stocks': result})
-    return JsonResponse({'data': 'Invalid request'})
-
-
-@csrf_exempt
-def create_stock(request):
+def stock_create(request):
     if request.method == 'POST':
         stock = Stock()
         body = json.loads(request.body.decode('utf-8'))
@@ -139,8 +84,14 @@ def create_stock(request):
         return JsonResponse({'data': 'Created successfully', 'stock': get_default_attributes(stock)})
     return JsonResponse({'data': 'Invalid request'})
 
+
 @csrf_exempt
-def update_stock(request):
+def stock_detail(request, pk):
+    return JsonResponse({'data': 'detail'})
+
+
+@csrf_exempt
+def stock_update(request, pk):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         if not 'Symbol' in body:
@@ -167,48 +118,105 @@ def update_stock(request):
             today_capitalization_min = 5000000000
             percentage_change_in_price_min = 0.01
             check_filtered_symbol = Stock.objects.filter(Q(id=symbol.id) & Q(Volume__gt=Volume_min) & Q(
-            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
+                RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
                 RSI_14_diff__gt=RSI_14_diff_min) & Q(
                     ROE__gt=ROE_min) & Q(
                         EPS__gt=EPS_min) & Q(
                             today_capitalization__gt=today_capitalization_min) & Q(
                                 percentage_change_in_price__gt=percentage_change_in_price_min)
-                        ).order_by('-today_capitalization')
+            ).order_by('-today_capitalization')
             # print(len(check_filtered_symbol) == 0)
             if len(check_filtered_symbol) == 0:
                 return JsonResponse({'data': 'Updated successfully'})
             filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
-            RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
+                RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
                 RSI_14_diff__gt=RSI_14_diff_min) & Q(
                     ROE__gt=ROE_min) & Q(
                         EPS__gt=EPS_min) & Q(
                             today_capitalization__gt=today_capitalization_min) & Q(
                                 percentage_change_in_price__gt=percentage_change_in_price_min)
-                        ).order_by('-today_capitalization')
+            ).order_by('-today_capitalization')
             result = []
             for stock_item in filtered_stocks:
-                result.append(get_default_attributes(stock_item))    
+                result.append(get_default_attributes(stock_item))
             return JsonResponse({'data': 'Updated successfully', 'stock': get_default_attributes(symbol), 'stocks': result})
         return JsonResponse({'data': 'Item not found'})
     return JsonResponse({'data': 'Invalid request'})
 
-# @csrf_exempt
-# def delete_post(request):
-#     if request.method == 'POST':
-#         body = json.loads(request.body.decode('utf-8'))
-#         if not 'id' in body:
-#             return JsonResponse({'data': 'Invalid data'})
-#         search_id = body['id']
-#         post = Post.objects.filter(id=search_id).delete()
-#         if post[0] == 1:
-#             return JsonResponse({'data': 'Deleted successfully'})
-#         else:
-#             return JsonResponse({'data': 'Deleted failed'})
+
+@csrf_exempt
+def stock_delete(request, pk):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        if not 'id' in body:
+            return JsonResponse({'data': 'Invalid data'})
+        search_id = body['id']
+        stocks = Stock.objects.filter(id=search_id).delete()
+        if stocks[0] == 1:
+            return JsonResponse({'data': 'Deleted successfully'})
+        else:
+            return JsonResponse({'data': 'Deleted failed'})
 
 
 @csrf_exempt
-def delete_all_stocks(request):
+def stock_delete_all(request):
     if request.method == 'POST':
         Stock.objects.all().delete()
         return JsonResponse({'data': 'Deleted all stocks successfully'})
     return JsonResponse({'data': 'Deteled all stocks failed'})
+
+
+@csrf_exempt
+def get_quick_filtered_stocks(request):
+    filtered_stocks = Stock.objects.filter(Q(Volume__gt=10000) & Q(
+        RSI_14__gt=60) & Q(RSI_14__lt=70) & Q(RSI_14_diff__gt=0) & Q(ROE__gt=17) & Q(EPS__gt=3000))
+    result = []
+    for stock in filtered_stocks:
+        result.append(get_default_attributes(stock))
+    return JsonResponse({'stocks': result})
+
+
+@csrf_exempt
+def stock_filter(request):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        result = []
+        if 'watching_stocks' in body:
+            watching_stocks = body['watching_stocks']
+            filtered_stocks = Stock.objects.filter(Symbol__in=watching_stocks)
+            for stock in filtered_stocks:
+                result.append(get_default_attributes(stock))
+            return JsonResponse({'stocks': result})
+        Volume_min = 0
+        RSI_14_max = 1000000
+        RSI_14_min = -99999999
+        RSI_14_diff_min = -99999999
+        ROE_min = -99999999
+        EPS_min = -99999999
+        today_capitalization_min = 0
+        percentage_change_in_price_min = -99999999
+        Symbol_search = ''
+        if 'Symbol_search' in body:
+            Symbol_search = body['Symbol_search']
+        if 'Volume_min' in body:
+            Volume_min = body['Volume_min']
+        if 'RSI_14_max' in body:
+            RSI_14_max = body['RSI_14_max']
+        if 'RSI_14_min' in body:
+            RSI_14_min = body['RSI_14_min']
+        if 'RSI_14_diff_min' in body:
+            RSI_14_diff_min = body['RSI_14_diff_min']
+        if 'ROE_min' in body:
+            ROE_min = body['ROE_min']
+        if 'EPS_min' in body:
+            EPS_min = body['EPS_min']
+        if 'today_capitalization_min' in body:
+            today_capitalization_min = body['today_capitalization_min']
+        if 'percentage_change_in_price_min' in body:
+            percentage_change_in_price_min = body['percentage_change_in_price_min']
+        filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min) & Q(
+            today_capitalization__gt=today_capitalization_min) & Q(percentage_change_in_price__gt=percentage_change_in_price_min) & Q(Symbol__regex=r'{0}'.format(Symbol_search))).order_by('-today_capitalization')
+        for stock in filtered_stocks:
+            result.append(get_default_attributes(stock))
+        return JsonResponse({'stocks': result})
+    return JsonResponse({'data': 'Invalid request'})

@@ -5,32 +5,36 @@ from rest_framework.generics import (
     CreateAPIView,
     DestroyAPIView
 )
-from posts.models import Post
+from jobs.models import Job
 
 from .serializers import (
-    PostListSerializer,
-    PostDetailSerializer,
-    PostCreateUpdateSerializer
+    JobListSerializer,
+    JobDetailSerializer,
+    JobCreateUpdateSerializer
 )
 
-class PostListAPIView(ListAPIView):
-    serializer_class = PostListSerializer
-    queryset = Post.objects.all()
 
-class PostDetailAPIView(RetrieveAPIView):
-    serializer_class = PostDetailSerializer
-    queryset = Post.objects.all()
+class JobListAPIView(ListAPIView):
+    serializer_class = JobListSerializer
+    queryset = Job.objects.all()
+
+
+class JobDetailAPIView(RetrieveAPIView):
+    serializer_class = JobDetailSerializer
+    queryset = Job.objects.all()
     # lookup_field = 'id'
 
-class PostCreateAPIView(CreateAPIView):
-    serializer_class = PostCreateUpdateSerializer
-    queryset = Post.objects.all()
 
-class PostUpdateAPIView(RetrieveUpdateAPIView):
-    serializer_class = PostCreateUpdateSerializer
-    queryset = Post.objects.all()
+class JobCreateAPIView(CreateAPIView):
+    serializer_class = JobCreateUpdateSerializer
+    queryset = Job.objects.all()
 
-class PostDestroyAPIView(DestroyAPIView):
-    serializer_class = PostDetailSerializer
-    queryset = Post.objects.all()
 
+class JobUpdateAPIView(RetrieveUpdateAPIView):
+    serializer_class = JobCreateUpdateSerializer
+    queryset = Job.objects.all()
+
+
+class JobDestroyAPIView(DestroyAPIView):
+    serializer_class = JobDetailSerializer
+    queryset = Job.objects.all()

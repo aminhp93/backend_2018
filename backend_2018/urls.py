@@ -29,16 +29,13 @@ from jobs import views as jobs_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
-    path('stocks/all', stocks_views.get_all_stocks, name='all-stocks'),
-    path('stock/create', stocks_views.create_stock, name='stock-create'),
-    path('stock/update', stocks_views.update_stock, name='stock-update'),
-    path('stock/delete/all', stocks_views.delete_all_stocks, name='stock-delete-all'),
-    path('stocks/quickFilteredStocks', stocks_views.get_quick_filtered_stocks, name='quick-filtered-stocks'),
-    path('stocks/filter', stocks_views.filter_stock, name='stock-filter'),
-    url(r'^api/posts/', include('posts.api.urls', namespace='posts-api')),
-    url(r'^api/stocks/', include('stocks.api.urls', namespace='stocks-api')),
     url(r'^chat/', include('chat.urls', namespace='chat')),
     url(r'^posts/', include('posts.urls', namespace='posts')),
     url(r'^notes/', include('notes.urls', namespace='notes')),
-    url(r'^jobs/', include('jobs.urls', namespace='jobs'))
+    url(r'^jobs/', include('jobs.urls', namespace='jobs')),
+    url(r'^stocks/', include('stocks.urls', namespace='stocks')),
+    url(r'^api/posts/', include('posts.api.urls', namespace='posts-api')),
+    url(r'^api/notes/', include('notes.api.urls', namespace='notes-api')),
+    url(r'^api/jobs/', include('jobs.api.urls', namespace='jobs-api')),
+    url(r'^api/stocks/', include('stocks.api.urls', namespace='stocks-api')),
 ]

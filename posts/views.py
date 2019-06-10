@@ -25,7 +25,7 @@ def get_default_attributes(obj):
 
 
 @csrf_exempt
-def get_all_posts(request):
+def post_list(request):
     yesterday_miliseconds = time.time()*1000 - 86400000
     all_posts = Post.objects.all().exclude(Q(is_done=True) & Q(
         done_time__lt=yesterday_miliseconds)).order_by('scheduled_time')
@@ -36,7 +36,7 @@ def get_all_posts(request):
 
 
 @csrf_exempt
-def create_post(request):
+def post_create(request):
     if request.method == 'POST':
         post = Post()
         post.title = 'title'
@@ -54,7 +54,12 @@ def create_post(request):
 
 
 @csrf_exempt
-def update_post(request):
+def post_detail(request, pk):
+    return JsonResponse({'data': 'detail'})
+
+
+@csrf_exempt
+def post_update(request, pk):
     if request.method == 'POST':
         print(request, request.body.decode('utf-8'))
         body = json.loads(request.body.decode('utf-8'))
@@ -109,7 +114,7 @@ def update_post(request):
 
 
 @csrf_exempt
-def delete_post(request):
+def post_delete(request, pk):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         if not 'id' in body:

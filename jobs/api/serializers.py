@@ -3,39 +3,37 @@ from rest_framework.serializers import (
     HyperlinkedIdentityField
 )
 
-from posts.models import Post
+from jobs.models import Job
 
-post_detail_url = HyperlinkedIdentityField(
-    view_name='posts-api:detail'
+job_detail_url = HyperlinkedIdentityField(
+    view_name='jobs-api:detail'
 )
 
-class PostListSerializer(ModelSerializer):
-    url = post_detail_url
+
+class JobListSerializer(ModelSerializer):
+    url = job_detail_url
+
     class Meta:
-        model = Post
+        model = Job
         fields = [
             'id',
             'url',
             'content'
         ]
 
-class PostDetailSerializer(ModelSerializer):
+
+class JobDetailSerializer(ModelSerializer):
     class Meta:
-        model = Post
+        model = Job
         fields = [
-             'id',
-            'title', 
-            'content',
-            'is_done',
-            'is_doing',
-            'default_cost',
-            'actual_cost',
-            'timestamp'
+            'id',
+            'content'
         ]
-    
-class PostCreateUpdateSerializer(ModelSerializer):
+
+
+class JobCreateUpdateSerializer(ModelSerializer):
     class Meta:
-        model = Post
+        model = Job
         fields = [
             'content'
         ]
