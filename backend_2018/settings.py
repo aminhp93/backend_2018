@@ -47,7 +47,9 @@ INSTALLED_APPS = [
     'jobs',
     'chat',
     'corsheaders',
-    'channels'
+    'channels',
+    'rest_framework'
+
 ]
 
 MIDDLEWARE = [
