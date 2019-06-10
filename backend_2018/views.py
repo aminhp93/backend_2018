@@ -20,11 +20,20 @@ import json
 # def disconnect(sid):
 #     print('disconnect ', sid)
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
-def home(request):
-    return JsonResponse({'data': 'home'})
 
-
-def chat(request):
-    # print(dir(sio))
-    return JsonResponse({'data': 'chat'})
+@api_view(['GET'])
+def home(request, format=None):
+    return Response({
+        'posts': reverse('posts:list', request=request, format=format),
+        'notes': reverse('notes:list', request=request, format=format),
+        'jobs': reverse('jobs:list', request=request, format=format),
+        'stocks': reverse('stocks:list', request=request, format=format),
+        'posts-api': reverse('posts-api:list', request=request, format=format),
+        'notes-api': reverse('notes-api:list', request=request, format=format),
+        'jobs-api': reverse('jobs-api:list', request=request, format=format),
+        'stocks-api': reverse('stocks-api:list', request=request, format=format),
+    })

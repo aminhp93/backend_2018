@@ -17,14 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
-from .views import home, chat
-from industries import views as industries_views
-from tradingStatistics import views as trading_statistics_views
-from historicalQuotes import views as historical_quotes_views
-from posts import views as posts_views
-from notes import views as notes_views
-from stocks import views as stocks_views
-from jobs import views as jobs_views
+from .views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
