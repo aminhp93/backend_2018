@@ -19,7 +19,7 @@
     );
     let url = '';
     if (window.location.protocol == "https:") {
-        url = "wss://" +  window.location.host + '/ws/chat/' + roomName + '/'
+        url = "wss://" + 'www.' + window.location.host + '/ws/chat/' + roomName + '/'
     } else {
         url = "ws://" +  window.location.host + '/ws/chat/' + roomName + '/'
     }
