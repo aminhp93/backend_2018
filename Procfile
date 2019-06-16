@@ -1,1 +1,2 @@
-web: newrelic-admin run-program gunicorn backend_2018.wsgi
+web: daphne backend_2018.asgi:application
+worker: python manage.py runserver
