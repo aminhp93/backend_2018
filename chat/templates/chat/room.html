@@ -19,9 +19,9 @@
     );
     let url = '';
     if (window.location.protocol == "https:") {
-        url = "wss://" + 'www.' + window.location.host + '/ws/chat/' + roomName + '/'
+        url = "wss://" + window.location.host + '/ws/chat/' + roomName + '/'
     } else {
-        url = "ws://" +  window.location.host + '/ws/chat/' + roomName + '/'
+        url = "ws://" + window.location.host + '/ws/chat/' + roomName + '/'
     }
     console.log(url)
     var chatSocket = new WebSocket(url)
