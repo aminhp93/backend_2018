@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     'chat',
     'corsheaders',
     'channels',
+    'tinder',
     'rest_framework'
-
 ]
 
 MIDDLEWARE = [
