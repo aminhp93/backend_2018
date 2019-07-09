@@ -27,8 +27,10 @@ urlpatterns = [
     url(r'^notes/', include('notes.urls', namespace='notes')),
     url(r'^jobs/', include('jobs.urls', namespace='jobs')),
     url(r'^stocks/', include('stocks.urls', namespace='stocks')),
+    url(r'^tinder/', include('tinder.urls', namespace='tinder')),
     url(r'^api/posts/', include('posts.api.urls', namespace='posts-api')),
     url(r'^api/notes/', include('notes.api.urls', namespace='notes-api')),
     url(r'^api/jobs/', include('jobs.api.urls', namespace='jobs-api')),
     url(r'^api/stocks/', include('stocks.api.urls', namespace='stocks-api')),
+    url(r'^api/tinder/', include('tinder.api.urls', namespace='tinder-api')),
 ]

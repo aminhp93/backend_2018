@@ -36,4 +36,5 @@ def home(request, format=None):
         'notes-api': reverse('notes-api:list', request=request, format=format),
         'jobs-api': reverse('jobs-api:list', request=request, format=format),
         'stocks-api': reverse('stocks-api:list', request=request, format=format),
+        'tinder-api': reverse('tinder-api:list', request=request, format=format),
     })
