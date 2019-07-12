@@ -17,7 +17,13 @@ def get_default_attributes(data):
 
 @csrf_exempt
 def tinder_list(request):
-    all_tinders = Tinder.objects.all()
+    print(request, request.META, request.GET)
+
+    status = 'active'
+    if 'status' in request.GET:
+        status = request.GET['status']
+    print(status)
+    all_tinders = Tinder.objects.all().filter(status=status)[:50]
     result = []
     for tinder in all_tinders:
         result.append(get_default_attributes(tinder))
@@ -140,7 +146,8 @@ def tinder_filter(request):
         result = []
         if 'watching_tinders' in body:
             watching_tinders = body['watching_tinders']
-            filtered_tinders = tinder.objects.filter(Symbol__in=watching_tinders)
+            filtered_tinders = tinder.objects.filter(
+                Symbol__in=watching_tinders)
             for tinder in filtered_tinders:
                 result.append(get_default_attributes(tinder))
             return JsonResponse({'tinders': result})
