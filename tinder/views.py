@@ -17,11 +17,18 @@ def get_default_attributes(data):
 
 @csrf_exempt
 def tinder_list(request):
-    all_tinders = Tinder.objects.all()
+    print(request.GET)
+    if 'q' in request.GET:
+        print(request.GET['q'])
+        content_regex = request.GET['q']
+        tinders = Tinder.objects.filter(content__regex=r'{0}'.format(content_regex))
+    else:
+        tinders = Tinder.objects.all()
     result = []
-    for tinder in all_tinders:
-        result.append(get_default_attributes(tinder))
-    return JsonResponse({'results': result})
+    for tinder in tinders:
+        if len(result) < 100:
+            result.append(get_default_attributes(tinder))
+    return JsonResponse({'results': result, 'length': len(tinders)})
 
 
 @csrf_exempt
@@ -177,3 +184,23 @@ def tinder_filter(request):
             result.append(get_default_attributes(tinder))
         return JsonResponse({'tinders': result})
     return JsonResponse({'data': 'Invalid request'})
+
+
+@csrf_exempt
+def analyze(request):
+    results = []
+    for i in range(1980, 2005):
+        regex = 'birth_date\":\"' + str(i)
+        count = len(Tinder.objects.filter(content__regex=r'{0}'.format(regex)))
+        key = str(i)
+        item = {
+            'name': key,
+            'value': count
+        }
+        results.append(item)
+    print(results)
+    return JsonResponse({
+        'data': {
+            'count': results 
+        }
+    })

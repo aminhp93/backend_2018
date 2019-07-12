@@ -13,4 +13,5 @@ urlpatterns = [
     url(r'^(?P<pk>[\d-]+)/delete/$', views.tinder_delete, name='delete'),
     url(r'^delete/all/$', views.tinder_delete_all, name='delete-all'),
     url(r'^filter/$', views.tinder_filter, name='filter'),
+    url(r'^analyze/$', views.analyze, name='analyze'),
 ]
