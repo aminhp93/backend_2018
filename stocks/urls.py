@@ -13,4 +13,5 @@ urlpatterns = [
     url(r'^(?P<pk>[\d-]+)/delete/$', views.stock_delete, name='delete'),
     url(r'^delete/all/$', views.stock_delete_all, name='delete-all'),
     url(r'^filter/$', views.stock_filter, name='filter'),
+    url(r'^analyze/$', views.stock_analyze, name='analyze'),
 ]
