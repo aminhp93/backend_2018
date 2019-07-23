@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
 from .models import Stock
-
+import re
 
 def get_default_attributes(data):
     return {
@@ -24,24 +24,17 @@ def get_default_attributes(data):
         'percentage_change_in_volume': data.percentage_change_in_volume,
     }
 
-
-def get_analyze_attributes(data):
-    # print(json.loads(data.price_data))
+def get_analyze_attributes(data, percent, period):
     data1 = json.loads(data.price_data)
-    # [-500:-1]
     result = []
-    for i in range(0, len(data1) - 14):
-        # print(data1[i])
-        if data1[i]["Close"] * 1.1 < data1[i+14]["Close"]:
+    for i in range(0, len(data1) - period):
+        if data1[i]["Close"] * percent < data1[i + period]["High"]:
             result.append(data1[i]["Date"])
 
     return {
-        # 'price_data': data.price_data,
-        'today_capitalization': data.today_capitalization,
         'result': result,
         'Symbol': data.Symbol
     }
-
 
 @csrf_exempt
 def stock_list(request):
@@ -244,13 +237,73 @@ def stock_filter(request):
 def stock_analyze(request):
     today_capitalization_min = 5000000000
     Close = 3000
+    percent = 1.1
+    period = 14
+    justify = False
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
-        if 'symbol' in body:
-            filtered_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(today_capitalization__gt=today_capitalization_min))
+        if 'percent' in body:
+            percent = float(body['percent'])
+        if 'period' in body:
+            period = int(body['period'])
+        if 'justify' in body:
+            justify = True
+        filtered_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(today_capitalization__gt=today_capitalization_min))
+        if justify == True:
+            return_obj = {
+                'max_count': 0,
+                'percent': 0,
+                'period': 0,
+                'mapped_result': []
+            }
+            list_obj = []
+            for i in range(5, 20):
+                for j in range(105, 115):
+                    result = []
+                    count = 0
+                    for stock in filtered_stocks:
+                        result.append(get_analyze_attributes(stock, j/100, i))
+                    mapped_result = mapData(result)
+                    for k in range(0, len(mapped_result)):
+                        count += mapped_result[k]['value']
+                    if return_obj['max_count'] < count:
+                        return_obj['max_count'] = count
+                        return_obj['percent'] = j/100
+                        return_obj['period'] = i
+                        return_obj['mapped_result'] = mapped_result
+                    list_obj.append({
+                        'max_count': count,
+                        'percent': j/100,
+                        'period': i,
+                        'mapped_result': mapped_result
+                    })
+            # print(return_obj)
+            return JsonResponse({'symbol': return_obj['mapped_result'], 'return_obj': return_obj, 'list_obj': list_obj})
+        else:
             result = []
             for stock in filtered_stocks:
-                result.append(get_analyze_attributes(stock))
-            return JsonResponse({'symbol': result})
-        return JsonResponse({'data': 'invalid'})
+                result.append(get_analyze_attributes(stock, percent, period))
+            mapped_result = mapData(result)
+            return JsonResponse({'symbol': mapped_result})
     return JsonResponse({'data': 'invalid'})
+
+def mapData(data):
+    result = {}
+    converted_result = []
+    for i in range(0, len(data)):
+      item = data[i]["result"]
+      for j in range(0, len(item)):
+          if not item[j] in result:
+            result[item[j]] = []
+          result[item[j]].append(data[i]["Symbol"])
+    keys = list(result)
+    keys.sort()
+    for k in range(0, len(keys)):
+        key = str(keys[k])[0: 10]
+        if (re.search("(2016|2017|2018|2019)", key)):
+            converted_result.append({
+                "name": str(keys[k])[0: 10],
+                "data": result[keys[k]],
+                "value": len(result[keys[k]])
+            })
+    return converted_result
