@@ -12,18 +12,21 @@ def get_default_attributes(data):
         'id': data.id,
         'user_id': data.user_id,
         'content': data.content,
+        'status': data.status,
     }
 
 
 @csrf_exempt
 def tinder_list(request):
-    print(request.GET)
+    print(request, request.META, request.GET)
+    status = 'active'
+    if 'status' in request.GET:
+        status = request.GET['status']
+    content_regex = ''
     if 'q' in request.GET:
-        print(request.GET['q'])
         content_regex = request.GET['q']
-        tinders = Tinder.objects.filter(content__regex=r'{0}'.format(content_regex))
-    else:
-        tinders = Tinder.objects.all()
+    tinders = Tinder.objects.filter(
+        Q(content__regex=r'{0}'.format(content_regex)) & Q(status=status))
     result = []
     for tinder in tinders:
         if len(result) < 100:
@@ -55,55 +58,20 @@ def tinder_detail(request, pk):
 
 
 @csrf_exempt
-def tinder_update(request, pk):
+def tinder_update(request):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
-        if not 'Symbol' in body:
+        if not 'id' in body:
             return JsonResponse({'data': 'Invalid data'})
-        search_symbol = body['Symbol']
-        filter_symbols = tinder.objects.filter(Symbol=search_symbol)
-        if len(filter_symbols) == 1:
-            symbol = filter_symbols[0]
-            if 'Volume' in body:
-                symbol.Volume = body['Volume']
-            if 'Close' in body:
-                symbol.Close = body['Close']
-            if 'today_capitalization' in body:
-                symbol.today_capitalization = body['today_capitalization']
-            if 'percentage_change_in_price' in body:
-                symbol.percentage_change_in_price = body['percentage_change_in_price']
-            symbol.save()
-            Volume_min = 0
-            RSI_14_max = 1000000
-            RSI_14_min = 0
-            RSI_14_diff_min = 0
-            ROE_min = 0
-            EPS_min = 0
-            today_capitalization_min = 5000000000
-            percentage_change_in_price_min = 0.01
-            check_filtered_symbol = tinder.objects.filter(Q(id=symbol.id) & Q(Volume__gt=Volume_min) & Q(
-                RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
-                RSI_14_diff__gt=RSI_14_diff_min) & Q(
-                    ROE__gt=ROE_min) & Q(
-                        EPS__gt=EPS_min) & Q(
-                            today_capitalization__gt=today_capitalization_min) & Q(
-                                percentage_change_in_price__gt=percentage_change_in_price_min)
-            ).order_by('-today_capitalization')
-            # print(len(check_filtered_symbol) == 0)
-            if len(check_filtered_symbol) == 0:
-                return JsonResponse({'data': 'Updated successfully'})
-            filtered_tinders = tinder.objects.filter(Q(Volume__gt=Volume_min) & Q(
-                RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(
-                RSI_14_diff__gt=RSI_14_diff_min) & Q(
-                    ROE__gt=ROE_min) & Q(
-                        EPS__gt=EPS_min) & Q(
-                            today_capitalization__gt=today_capitalization_min) & Q(
-                                percentage_change_in_price__gt=percentage_change_in_price_min)
-            ).order_by('-today_capitalization')
-            result = []
-            for tinder_item in filtered_tinders:
-                result.append(get_default_attributes(tinder_item))
-            return JsonResponse({'data': 'Updated successfully', 'tinder': get_default_attributes(symbol), 'tinders': result})
+        search_id = body['id']
+        search_tinders = Tinder.objects.filter(id=search_id)
+        print(search_tinders)
+        if len(search_tinders) == 1:
+            tinder = search_tinders[0]
+            if 'status' in body:
+                tinder.status = body['status']
+            tinder.save()
+            return JsonResponse({'data': 'Updated successfully', 'tinder': get_default_attributes(tinder)})
         return JsonResponse({'data': 'Item not found'})
     return JsonResponse({'data': 'Invalid request'})
 
@@ -147,7 +115,8 @@ def tinder_filter(request):
         result = []
         if 'watching_tinders' in body:
             watching_tinders = body['watching_tinders']
-            filtered_tinders = tinder.objects.filter(Symbol__in=watching_tinders)
+            filtered_tinders = tinder.objects.filter(
+                Symbol__in=watching_tinders)
             for tinder in filtered_tinders:
                 result.append(get_default_attributes(tinder))
             return JsonResponse({'tinders': result})

@@ -25,6 +25,21 @@ def get_default_attributes(data):
     }
 
 
+def get_analyze_attributes(data):
+    # print(json.loads(data.price_data))
+    data1 = json.loads(data.price_data)[-750:-1]
+    result = []
+    for i in range(0, len(data1) - 14):
+        # print(data1[i])
+        if data1[i]["Close"] * 1.1 < data1[i+14]["Close"]:
+            result.append(data1[i]["Date"])
+
+    return {
+        'price_data': data.price_data,
+        'result': result
+    }
+
+
 @csrf_exempt
 def stock_list(request):
     all_stocks = Stock.objects.all()
@@ -220,3 +235,17 @@ def stock_filter(request):
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
     return JsonResponse({'data': 'Invalid request'})
+
+
+@csrf_exempt
+def stock_analyze(request):
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        if 'symbol' in body:
+            filtered_stocks = Stock.objects.filter(Symbol=body['symbol'])
+            result = []
+            for stock in filtered_stocks:
+                result.append(get_analyze_attributes(stock))
+            return JsonResponse({'symbol': result})
+        return JsonResponse({'data': 'invalid'})
+    return JsonResponse({'data': 'invalid'})
