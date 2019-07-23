@@ -27,7 +27,8 @@ def get_default_attributes(data):
 
 def get_analyze_attributes(data):
     # print(json.loads(data.price_data))
-    data1 = json.loads(data.price_data)[-750:-1]
+    data1 = json.loads(data.price_data)
+    # [-500:-1]
     result = []
     for i in range(0, len(data1) - 14):
         # print(data1[i])
@@ -35,8 +36,10 @@ def get_analyze_attributes(data):
             result.append(data1[i]["Date"])
 
     return {
-        'price_data': data.price_data,
-        'result': result
+        # 'price_data': data.price_data,
+        'today_capitalization': data.today_capitalization,
+        'result': result,
+        'Symbol': data.Symbol
     }
 
 
@@ -239,10 +242,12 @@ def stock_filter(request):
 
 @csrf_exempt
 def stock_analyze(request):
+    today_capitalization_min = 5000000000
+    Close = 3000
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         if 'symbol' in body:
-            filtered_stocks = Stock.objects.filter(Symbol=body['symbol'])
+            filtered_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(today_capitalization__gt=today_capitalization_min))
             result = []
             for stock in filtered_stocks:
                 result.append(get_analyze_attributes(stock))
