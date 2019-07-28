@@ -7,6 +7,7 @@ import json
 from .models import Stock
 import re
 
+
 def get_default_attributes(data):
     return {
         'id': data.id,
@@ -24,6 +25,7 @@ def get_default_attributes(data):
         'percentage_change_in_volume': data.percentage_change_in_volume,
     }
 
+
 def get_analyze_attributes(data, percent, period):
     data1 = json.loads(data.price_data)
     result = []
@@ -35,6 +37,7 @@ def get_analyze_attributes(data, percent, period):
         'result': result,
         'Symbol': data.Symbol
     }
+
 
 @csrf_exempt
 def stock_list(request):
@@ -248,7 +251,8 @@ def stock_analyze(request):
             period = int(body['period'])
         if 'justify' in body:
             justify = True
-        filtered_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(today_capitalization__gt=today_capitalization_min))
+        filtered_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(
+            today_capitalization__gt=today_capitalization_min))
         if justify == True:
             return_obj = {
                 'max_count': 0,
@@ -257,8 +261,8 @@ def stock_analyze(request):
                 'mapped_result': []
             }
             list_obj = []
-            for i in range(5, 20):
-                for j in range(105, 115):
+            for i in range(5, 10):
+                for j in range(105, 110):
                     result = []
                     count = 0
                     for stock in filtered_stocks:
@@ -287,15 +291,16 @@ def stock_analyze(request):
             return JsonResponse({'symbol': mapped_result})
     return JsonResponse({'data': 'invalid'})
 
+
 def mapData(data):
     result = {}
     converted_result = []
     for i in range(0, len(data)):
-      item = data[i]["result"]
-      for j in range(0, len(item)):
-          if not item[j] in result:
-            result[item[j]] = []
-          result[item[j]].append(data[i]["Symbol"])
+        item = data[i]["result"]
+        for j in range(0, len(item)):
+            if not item[j] in result:
+                result[item[j]] = []
+            result[item[j]].append(data[i]["Symbol"])
     keys = list(result)
     keys.sort()
     for k in range(0, len(keys)):
@@ -307,3 +312,24 @@ def mapData(data):
                 "value": len(result[keys[k]])
             })
     return converted_result
+
+
+@csrf_exempt
+def stock_backtest(request):
+    result = []
+    if request.method == 'POST':
+        body = json.loads(request.body.decode('utf-8'))
+        # get 5 stocks from algorithm (today_capitalization_min > 5000000000): ACB, FPT, VCB, DAH, MSN
+        # get Open value of that 5 stocks from 01-01-2016
+        stock_1 = Stock.objects.filter(
+            Symbol__in=['ACB', 'FPT', 'VCB', 'MSN', 'MBB'])
+        for i in range(0, len(stock_1)):
+            price_data_stock_1 = json.loads(stock_1[i].price_data)
+            started_price_stock_1 = list(
+                filter(lambda item: item['Date'] == '2016-01-04T00:00:00Z', price_data_stock_1))
+            result.append({
+                'Symbol': stock_1[i].Symbol,
+                'Date': started_price_stock_1[0]['Date'],
+                'Open': started_price_stock_1[0]['Open']
+            })
+    return JsonResponse({'data': result})
