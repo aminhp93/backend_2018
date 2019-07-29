@@ -6,6 +6,7 @@ import requests
 import json
 from .models import Stock
 import re
+import random
 
 
 def get_default_attributes(data):
@@ -321,25 +322,42 @@ def stock_backtest(request):
         body = json.loads(request.body.decode('utf-8'))
         # get 5 stocks from algorithm (today_capitalization_min > 5000000000): ACB, FPT, VCB, DAH, MSN
         # get Open value of that 5 stocks from 01-01-2016
-        stock_1 = Stock.objects.filter(
-            Symbol__in=['ACB', 'FPT', 'VCB', 'MSN', 'MBB'])
-        for i in range(0, len(stock_1)):
-            price_data_stock_1 = json.loads(stock_1[i].price_data)
-            # started_price_stock_1 = list(filter(lambda item: item['Date'] == '2016-01-04T00:00:00Z', price_data_stock_1))
-            start_obj = {}
+        today_capitalization_min = 5000000000
+        Close = 3000
+        get_stock = Stock.objects.filter(Symbol='FPT')[0]
+        len_get_stock = len(json.loads(get_stock.price_data))
+        print(len_get_stock)
+        a = 0
+        test_date = '2019-01-04T00:00:00Z'
+        start_obj = {}
+        while a < len_get_stock:
+            print(a, 330)
+            filter_stocks = Stock.objects.filter(Q(Close__gt=Close) & Q(
+                today_capitalization__gt=today_capitalization_min))
+
+            random_index = random.randint(0, len(filter_stocks) - 1)
+            stock = filter_stocks[random_index]
+            price_data_stock_1 = json.loads(stock.price_data)
+
+            print(len(price_data_stock_1), 339)
+
             for j in range(0, len(price_data_stock_1)):
-                if price_data_stock_1[j]['Date'] ==  '2016-01-04T00:00:00Z':
+                if price_data_stock_1[j]['Date'] == test_date:
                     start_obj = price_data_stock_1[j]
                     start_obj['current_index'] = j
-                    break;
+                    break
+
+            print(start_obj['current_index'], 344)
             end_obj = price_data_stock_1[start_obj['current_index'] + 18]
             for k in range(start_obj['current_index'], start_obj['current_index'] + 19):
                 if start_obj['Open'] * 1.05 <= price_data_stock_1[k]['High']:
                     end_obj = price_data_stock_1[k]
-                    break;
+                    test_date = end_obj['Date']
+                    break
             result.append({
-                'Symbol': stock_1[i].Symbol,
+                'Symbol': stock.Symbol,
                 'start_obj': start_obj,
                 'end_obj': end_obj
             })
+            a += 100
     return JsonResponse({'data': result})
