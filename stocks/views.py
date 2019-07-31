@@ -322,6 +322,7 @@ def stock_backtest(request):
         body = json.loads(request.body.decode('utf-8'))
         # get 5 stocks from algorithm (today_capitalization_min > 5000000000): ACB, FPT, VCB, DAH, MSN
         # get Open value of that 5 stocks from 01-01-2016
+<<<<<<< HEAD
         today_capitalization_min = 5000000000
         Close = 3000
         get_stock = Stock.objects.filter(Symbol='FPT')[0]
@@ -341,6 +342,14 @@ def stock_backtest(request):
 
             print(len(price_data_stock_1), 339)
 
+=======
+        stock_1 = Stock.objects.filter(
+            Symbol__in=['ACB', 'FPT', 'VCB', 'MSN', 'MBB'])
+        for i in range(0, len(stock_1)):
+            price_data_stock_1 = json.loads(stock_1[i].price_data)
+            # started_price_stock_1 = list(filter(lambda item: item['Date'] == '2016-01-04T00:00:00Z', price_data_stock_1))
+            start_obj = {}
+>>>>>>> e72358dc98af0488ec2ceb587af0702f95e11345
             for j in range(0, len(price_data_stock_1)):
                 if price_data_stock_1[j]['Date'] == test_date:
                     start_obj = price_data_stock_1[j]
