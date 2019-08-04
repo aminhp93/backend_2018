@@ -7,6 +7,8 @@ import json
 from .models import Stock
 import re
 
+from helpers.functionUtils import count_trading_times
+
 
 def get_default_attributes(data):
     return {
@@ -322,24 +324,41 @@ def stock_backtest(request):
         # get 5 stocks from algorithm (today_capitalization_min > 5000000000): ACB, FPT, VCB, DAH, MSN
         # get Open value of that 5 stocks from 01-01-2016
         stock_1 = Stock.objects.filter(
-            Symbol__in=['ACB', 'FPT', 'VCB', 'MSN', 'MBB'])
+            Symbol__in=['VCB'])
+        sample_stock = json.loads(stock_1[0].price_data)
+        count_trading_times_obj = count_trading_times(sample_stock, '2016-01-01', '2018-12-31')
         for i in range(0, len(stock_1)):
-            price_data_stock_1 = json.loads(stock_1[i].price_data)
-            # started_price_stock_1 = list(filter(lambda item: item['Date'] == '2016-01-04T00:00:00Z', price_data_stock_1))
-            start_obj = {}
-            for j in range(0, len(price_data_stock_1)):
-                if price_data_stock_1[j]['Date'] ==  '2016-01-04T00:00:00Z':
-                    start_obj = price_data_stock_1[j]
-                    start_obj['current_index'] = j
-                    break;
-            end_obj = price_data_stock_1[start_obj['current_index'] + 18]
-            for k in range(start_obj['current_index'], start_obj['current_index'] + 19):
-                if start_obj['Open'] * 1.05 <= price_data_stock_1[k]['High']:
-                    end_obj = price_data_stock_1[k]
-                    break;
-            result.append({
-                'Symbol': stock_1[i].Symbol,
-                'start_obj': start_obj,
-                'end_obj': end_obj
-            })
+            price_data_array = json.loads(stock_1[i].price_data) 
+            j = 0
+            start_index = 0
+            end_index = 0
+            price_data_array.index
+            while j < len(price_data_array) - 1:
+                if price_data_array[j]['Date'] == count_trading_times_obj['start_obj']['Date']:
+                    start_index = j
+                    break
+                j += 1
+            n = 0
+            while j < len(price_data_array) - 1:
+                if price_data_array[n]['Date'] == count_trading_times_obj['end_obj']['Date']:
+                    end_index = n
+                    break
+                n += 1
+            k = start_index
+            while k < end_index - 19:
+                start_obj = price_data_array[k]
+                increment_number = 19
+                end_obj = price_data_array[k + increment_number]
+                m = 0
+                while m < 19:
+                    if start_obj['Open'] * 1.05 <= price_data_array[m]['High']:
+                        increment_number = m
+                        break
+                    m += 1
+                result.append({
+                    'Symbol': stock_1[i].Symbol,
+                    'start_obj': start_obj,
+                    'end_obj': end_obj
+                })
+                k += increment_number
     return JsonResponse({'data': result})
