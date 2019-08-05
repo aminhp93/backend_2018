@@ -7,7 +7,7 @@ import json
 from .models import Stock
 import re
 
-from helpers.functionUtils import count_trading_times
+from helpers.functionUtils import count_trading_times, find_index_array_object, array_test
 
 
 def get_default_attributes(data):
@@ -53,51 +53,60 @@ def stock_list(request):
 @csrf_exempt
 def stock_create(request):
     if request.method == 'POST':
-        stock = Stock()
         body = json.loads(request.body.decode('utf-8'))
         if not 'Symbol' in body:
             return JsonResponse({'data': 'Invalid data'})
-        stock.Symbol = body['Symbol']
         if not 'price_data' in body:
             return JsonResponse({'data': 'Invalid data'})
-        stock.price_data = body['price_data']
-        if 'yesterday_Close' in body:
-            stock.yesterday_Close = body['yesterday_Close']
-        if 'Close' in body:
-            stock.Close = body['Close']
-        if 'Volume' in body:
-            stock.Volume = body['Volume']
-        if 'RSI_14' in body:
-            stock.RSI_14 = body['RSI_14']
-        if 'RSI_14_diff' in body:
-            stock.RSI_14_diff = body['RSI_14_diff']
-        if 'today_capitalization' in body:
-            stock.today_capitalization = body['today_capitalization']
-        if 'percentage_change_in_volume' in body:
-            stock.percentage_change_in_volume = body['percentage_change_in_volume']
-        if 'percentage_change_in_price' in body:
-            stock.percentage_change_in_price = body['percentage_change_in_price']
-        url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
-        querystring = {"symbol": body['Symbol']}
-        headers = {
-            'cache-control': "no-cache",
-            'postman-token': "8d5daf06-af9e-eb5f-6cf7-c137ac9c9c5e"
-        }
-        response = requests.request(
-            "GET", url, headers=headers, params=querystring)
-        if response.text != 'null':
-            latestFinancialData = json.loads(response.text)
-            if 'ROE' in latestFinancialData and type(latestFinancialData['ROE']) == float:
-                stock.ROE = latestFinancialData['ROE'] * 100
-            if 'EPS' in latestFinancialData and type(latestFinancialData['EPS']) == float:
-                stock.EPS = latestFinancialData['EPS']
-            if 'MarketCapitalization' in latestFinancialData and type(latestFinancialData['MarketCapitalization']) == float:
-                stock.MarketCapitalization = latestFinancialData['MarketCapitalization'] / 10**9
-        stock.financial_data = response.text
-        stock.save()
-        if not stock.id:
-            return JsonResponse({'data': 'Created failed'})
-        return JsonResponse({'data': 'Created successfully', 'stock': get_default_attributes(stock)})
+        # stock.price_data = body['price_data']
+        price_data = json.loads(body['price_data'])
+        for i in range(len(price_data)):
+            stock = Stock()
+            stock.Symbol = price_data[i]['Symbol']
+            stock.Close = price_data[i]['Close']
+            stock.Open = price_data[i]['Open']
+            stock.High = price_data[i]['High']
+            stock.Low = price_data[i]['Low']
+            stock.Volume = price_data[i]['Volume']
+            stock.Value = price_data[i]['Value']
+            stock.Date = price_data[i]['Date']
+        # if 'yesterday_Close' in body:
+        #     stock.yesterday_Close = body['yesterday_Close']
+        # if 'Close' in body:
+        #     stock.Close = body['Close']
+        # if 'Volume' in body:
+        #     stock.Volume = body['Volume']
+        # if 'RSI_14' in body:
+        #     stock.RSI_14 = body['RSI_14']
+        # if 'RSI_14_diff' in body:
+        #     stock.RSI_14_diff = body['RSI_14_diff']
+        # if 'today_capitalization' in body:
+        #     stock.today_capitalization = body['today_capitalization']
+        # if 'percentage_change_in_volume' in body:
+        #     stock.percentage_change_in_volume = body['percentage_change_in_volume']
+        # if 'percentage_change_in_price' in body:
+        #     stock.percentage_change_in_price = body['percentage_change_in_price']
+        # url = "https://svr1.fireant.vn/api/Data/Finance/LastestFinancialInfo"
+        # querystring = {"symbol": body['Symbol']}
+        # headers = {
+        #     'cache-control': "no-cache",
+        #     'postman-token': "8d5daf06-af9e-eb5f-6cf7-c137ac9c9c5e"
+        # }
+        # response = requests.request(
+        #     "GET", url, headers=headers, params=querystring)
+        # if response.text != 'null':
+        #     latestFinancialData = json.loads(response.text)
+        #     if 'ROE' in latestFinancialData and type(latestFinancialData['ROE']) == float:
+        #         stock.ROE = latestFinancialData['ROE'] * 100
+        #     if 'EPS' in latestFinancialData and type(latestFinancialData['EPS']) == float:
+        #         stock.EPS = latestFinancialData['EPS']
+        #     if 'MarketCapitalization' in latestFinancialData and type(latestFinancialData['MarketCapitalization']) == float:
+        #         stock.MarketCapitalization = latestFinancialData['MarketCapitalization'] / 10**9
+        # stock.financial_data = response.text
+            stock.save()
+            if not stock.id:
+                return JsonResponse({'data': 'Created failed'})
+        return JsonResponse({'data': 'Created successfully'})
     return JsonResponse({'data': 'Invalid request'})
 
 
@@ -321,44 +330,56 @@ def stock_backtest(request):
     result = []
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
-        # get 5 stocks from algorithm (today_capitalization_min > 5000000000): ACB, FPT, VCB, DAH, MSN
-        # get Open value of that 5 stocks from 01-01-2016
-        stock_1 = Stock.objects.filter(
-            Symbol__in=['VCB'])
-        sample_stock = json.loads(stock_1[0].price_data)
-        count_trading_times_obj = count_trading_times(sample_stock, '2016-01-01', '2018-12-31')
-        for i in range(0, len(stock_1)):
-            price_data_array = json.loads(stock_1[i].price_data) 
-            j = 0
-            start_index = 0
-            end_index = 0
-            price_data_array.index
-            while j < len(price_data_array) - 1:
-                if price_data_array[j]['Date'] == count_trading_times_obj['start_obj']['Date']:
-                    start_index = j
+        # stock_1 = Stock.objects.filter(Symbol__in=['VCB'])
+        # sample_stock = json.loads(stock_1[0].price_data)
+        # count_trading_times_obj = count_trading_times(sample_stock, '2017-01-01', '2018-12-31')
+        # price_data_array = json.loads(stock_1[0].price_data) 
+        # j = 0
+        # start_index = 0
+        # end_index = 0
+        # while j < len(price_data_array) - 1:
+        #     if price_data_array[j]['Date'] == count_trading_times_obj['start_obj']['Date']:
+        #         start_index = j
+        #         break
+        #     j += 1
+        # n = 0
+        # while j < len(price_data_array) - 1:
+        #     if price_data_array[n]['Date'] == count_trading_times_obj['end_obj']['Date']:
+        #         end_index = n
+        #         break
+        #     n += 1
+        # date_array = []
+        # a = start_index
+        # while a < end_index:
+        #     date_array.append(price_data_array[a]['Date'])
+        #     a += 1
+        date_array = json.loads(array_test())
+        print(date_array)
+        k = 0
+        while k < len(date_array) - 18:
+            today_capitalization_min = 0
+            percentage_change_in_price_min = -99999999
+            filtered_stocks = Stock.objects.filter(
+                Q(Date=date_array[k]) &
+                Q(today_capitalization__gt=today_capitalization_min) & 
+                Q(percentage_change_in_price__gt=percentage_change_in_price_min)
+                ).order_by('-today_capitalization')
+            stock_obj = filtered_stocks[0]
+            # price_data_array = json.loads(stock_obj.price_data)
+            # index = find_index_array_object(price_data_array, 'Date', date_array[k])
+            start_obj = stock_obj
+            increment_number = 19
+            end_obj = price_data_array[index + increment_number]
+            m = 0
+            while m < 19:
+                if start_obj['Open'] * 1.05 <= price_data_array[m]['High']:
+                    increment_number = m
                     break
-                j += 1
-            n = 0
-            while j < len(price_data_array) - 1:
-                if price_data_array[n]['Date'] == count_trading_times_obj['end_obj']['Date']:
-                    end_index = n
-                    break
-                n += 1
-            k = start_index
-            while k < end_index - 19:
-                start_obj = price_data_array[k]
-                increment_number = 19
-                end_obj = price_data_array[k + increment_number]
-                m = 0
-                while m < 19:
-                    if start_obj['Open'] * 1.05 <= price_data_array[m]['High']:
-                        increment_number = m
-                        break
-                    m += 1
-                result.append({
-                    'Symbol': stock_1[i].Symbol,
-                    'start_obj': start_obj,
-                    'end_obj': end_obj
-                })
-                k += increment_number
+                m += 1
+            result.append({
+                'Symbol': stock_obj.Symbol,
+                'start_obj': start_obj,
+                'end_obj': end_obj
+            })
+            k += increment_number
     return JsonResponse({'data': result})
