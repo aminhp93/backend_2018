@@ -7,7 +7,12 @@ import json
 from .models import Stock
 import re
 
-from helpers.functionUtils import count_trading_times, find_index_array_object, array_test
+from helpers.functionUtils import (
+    count_trading_times,
+    find_index_array_object,
+    array_test,
+    find_index_array_string
+)
 
 
 def get_default_attributes(data):
@@ -21,6 +26,10 @@ def get_default_attributes(data):
         'RSI_14_diff': data.RSI_14_diff,
         'ROE': data.ROE,
         'EPS': data.EPS,
+        'Date': data.Date,
+        'Open': data.Open,
+        'High': data.High,
+        'Low': data.Low,
         'MarketCapitalization': data.MarketCapitalization,
         'today_capitalization': data.today_capitalization,
         'percentage_change_in_price': data.percentage_change_in_price,
@@ -354,32 +363,47 @@ def stock_backtest(request):
         #     date_array.append(price_data_array[a]['Date'])
         #     a += 1
         date_array = json.loads(array_test())
-        print(date_array)
+        # print(date_array)
         k = 0
         while k < len(date_array) - 18:
             today_capitalization_min = 0
             percentage_change_in_price_min = -99999999
             filtered_stocks = Stock.objects.filter(
-                Q(Date=date_array[k]) &
-                Q(today_capitalization__gt=today_capitalization_min) & 
-                Q(percentage_change_in_price__gt=percentage_change_in_price_min)
+                Q(Date=date_array[k])
+                # Q(today_capitalization__gt=today_capitalization_min) & 
+                # Q(percentage_change_in_price__gt=percentage_change_in_price_min)
                 ).order_by('-today_capitalization')
-            stock_obj = filtered_stocks[0]
-            # price_data_array = json.loads(stock_obj.price_data)
-            # index = find_index_array_object(price_data_array, 'Date', date_array[k])
-            start_obj = stock_obj
+            print(367, filtered_stocks)
             increment_number = 19
-            end_obj = price_data_array[index + increment_number]
-            m = 0
-            while m < 19:
-                if start_obj['Open'] * 1.05 <= price_data_array[m]['High']:
-                    increment_number = m
-                    break
-                m += 1
-            result.append({
-                'Symbol': stock_obj.Symbol,
-                'start_obj': start_obj,
-                'end_obj': end_obj
-            })
+            if len(filtered_stocks) > 0:
+                stock_obj = filtered_stocks[0]
+                start_obj = stock_obj
+                m = 3
+                end_objs = Stock.objects.filter(
+                    Q(Date=date_array[k+18]) & 
+                    Q(Symbol=start_obj.Symbol)
+                )
+                if len(end_objs) > 0:
+                    end_obj = end_objs[0]
+                    print(381, end_obj)
+                    while m < 19:
+                        filtered_end_obj = Stock.objects.filter(
+                            Q(Date=date_array[k+m]) & 
+                            Q(Symbol=start_obj.Symbol)
+                        )
+                        print(388, filtered_end_obj)
+                        if len(filtered_end_obj) > 0:
+                            end_obj = filtered_end_obj[0]
+                            if start_obj.Open * 1.05 <= end_obj.High:
+                                increment_number = m
+                                break
+                        m += 1
+                    print(393, start_obj, end_obj)
+                    result.append({
+                        'Symbol': stock_obj.Symbol,
+                        'start_obj': get_default_attributes(start_obj),
+                        'end_obj': get_default_attributes(end_obj)
+                    })
             k += increment_number
+        print(405, result)
     return JsonResponse({'data': result})
