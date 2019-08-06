@@ -52,7 +52,7 @@ def get_analyze_attributes(data, percent, period):
 
 @csrf_exempt
 def stock_list(request):
-    all_stocks = Stock.objects.all()
+    all_stocks = Stock.objects.filter(Date='2019-08-05T00:00:00Z')
     result = []
     for stock in all_stocks:
         result.append(get_default_attributes(stock))
@@ -70,6 +70,9 @@ def stock_create(request):
         # stock.price_data = body['price_data']
         price_data = json.loads(body['price_data'])
         for i in range(len(price_data)):
+            match = re.search(r'{0}'.format(price_data[i]['Date']), array_test())
+            if match is None:
+                continue
             stock = Stock()
             stock.Symbol = price_data[i]['Symbol']
             stock.Close = price_data[i]['Close']
@@ -79,18 +82,16 @@ def stock_create(request):
             stock.Volume = price_data[i]['Volume']
             stock.Value = price_data[i]['Value']
             stock.Date = price_data[i]['Date']
-        # if 'yesterday_Close' in body:
-        #     stock.yesterday_Close = body['yesterday_Close']
-        # if 'Close' in body:
-        #     stock.Close = body['Close']
-        # if 'Volume' in body:
-        #     stock.Volume = body['Volume']
         # if 'RSI_14' in body:
         #     stock.RSI_14 = body['RSI_14']
         # if 'RSI_14_diff' in body:
         #     stock.RSI_14_diff = body['RSI_14_diff']
         # if 'today_capitalization' in body:
-        #     stock.today_capitalization = body['today_capitalization']
+            stock.today_capitalization = stock.Volume * stock.Close
+            if stock.Symbol == price_data[i - 1]['Symbol']:
+                # print(stock.Close, price_data[i - 1]['Symbol'])
+                stock.percentage_change_in_price = (stock.Close - price_data[i - 1]['Close'])/price_data[i - 1]['Close']
+            
         # if 'percentage_change_in_volume' in body:
         #     stock.percentage_change_in_volume = body['percentage_change_in_volume']
         # if 'percentage_change_in_price' in body:
@@ -113,8 +114,8 @@ def stock_create(request):
         #         stock.MarketCapitalization = latestFinancialData['MarketCapitalization'] / 10**9
         # stock.financial_data = response.text
             stock.save()
-            if not stock.id:
-                return JsonResponse({'data': 'Created failed'})
+            # if not stock.id:
+                # return JsonResponse({'data': 'Created failed'})
         return JsonResponse({'data': 'Created successfully'})
     return JsonResponse({'data': 'Invalid request'})
 
@@ -159,7 +160,7 @@ def stock_update(request, pk):
                             today_capitalization__gt=today_capitalization_min) & Q(
                                 percentage_change_in_price__gt=percentage_change_in_price_min)
             ).order_by('-today_capitalization')
-            # print(len(check_filtered_symbol) == 0)
+            print(len(check_filtered_symbol) == 0)
             if len(check_filtered_symbol) == 0:
                 return JsonResponse({'data': 'Updated successfully'})
             filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(
@@ -301,7 +302,7 @@ def stock_analyze(request):
                         'period': i,
                         'mapped_result': mapped_result
                     })
-            # print(return_obj)
+            print(return_obj)
             return JsonResponse({'symbol': return_obj['mapped_result'], 'return_obj': return_obj, 'list_obj': list_obj})
         else:
             result = []
@@ -338,42 +339,19 @@ def mapData(data):
 def stock_backtest(request):
     result = []
     if request.method == 'POST':
-        body = json.loads(request.body.decode('utf-8'))
-        # stock_1 = Stock.objects.filter(Symbol__in=['VCB'])
-        # sample_stock = json.loads(stock_1[0].price_data)
-        # count_trading_times_obj = count_trading_times(sample_stock, '2017-01-01', '2018-12-31')
-        # price_data_array = json.loads(stock_1[0].price_data) 
-        # j = 0
-        # start_index = 0
-        # end_index = 0
-        # while j < len(price_data_array) - 1:
-        #     if price_data_array[j]['Date'] == count_trading_times_obj['start_obj']['Date']:
-        #         start_index = j
-        #         break
-        #     j += 1
-        # n = 0
-        # while j < len(price_data_array) - 1:
-        #     if price_data_array[n]['Date'] == count_trading_times_obj['end_obj']['Date']:
-        #         end_index = n
-        #         break
-        #     n += 1
-        # date_array = []
-        # a = start_index
-        # while a < end_index:
-        #     date_array.append(price_data_array[a]['Date'])
-        #     a += 1
+        body = json.loads(request.body.decode('utf-8'))       
         date_array = json.loads(array_test())
         # print(date_array)
         k = 0
         while k < len(date_array) - 18:
             today_capitalization_min = 0
-            percentage_change_in_price_min = -99999999
+            percentage_change_in_price_min = 0.01
             filtered_stocks = Stock.objects.filter(
-                Q(Date=date_array[k])
-                # Q(today_capitalization__gt=today_capitalization_min) & 
-                # Q(percentage_change_in_price__gt=percentage_change_in_price_min)
+                Q(Date=date_array[k]) &
+                Q(today_capitalization__gt=today_capitalization_min) &
+                Q(percentage_change_in_price__gt=percentage_change_in_price_min)
                 ).order_by('-today_capitalization')
-            print(367, filtered_stocks)
+            # print(367, filtered_stocks)
             increment_number = 19
             if len(filtered_stocks) > 0:
                 stock_obj = filtered_stocks[0]
@@ -385,25 +363,25 @@ def stock_backtest(request):
                 )
                 if len(end_objs) > 0:
                     end_obj = end_objs[0]
-                    print(381, end_obj)
+                    # print(381, end_obj)
                     while m < 19:
                         filtered_end_obj = Stock.objects.filter(
                             Q(Date=date_array[k+m]) & 
                             Q(Symbol=start_obj.Symbol)
                         )
-                        print(388, filtered_end_obj)
+                        # print(388, filtered_end_obj)
                         if len(filtered_end_obj) > 0:
                             end_obj = filtered_end_obj[0]
                             if start_obj.Open * 1.05 <= end_obj.High:
                                 increment_number = m
                                 break
                         m += 1
-                    print(393, start_obj, end_obj)
+                    # print(393, start_obj, end_obj)
                     result.append({
                         'Symbol': stock_obj.Symbol,
                         'start_obj': get_default_attributes(start_obj),
                         'end_obj': get_default_attributes(end_obj)
                     })
             k += increment_number
-        print(405, result)
+        # print(405, result)
     return JsonResponse({'data': result})
