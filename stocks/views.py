@@ -11,7 +11,8 @@ from helpers.functionUtils import (
     count_trading_times,
     find_index_array_object,
     array_test,
-    find_index_array_string
+    find_index_array_string,
+    range_date_to_update
 )
 
 
@@ -52,7 +53,7 @@ def get_analyze_attributes(data, percent, period):
 
 @csrf_exempt
 def stock_list(request):
-    all_stocks = Stock.objects.filter(Date='2019-08-05T00:00:00Z')
+    all_stocks = Stock.objects.filter(Date=date_2019()[-22:])
     result = []
     for stock in all_stocks:
         result.append(get_default_attributes(stock))
@@ -69,8 +70,9 @@ def stock_create(request):
             return JsonResponse({'data': 'Invalid data'})
         # stock.price_data = body['price_data']
         price_data = json.loads(body['price_data'])
+        range_date = range_date_to_update()
         for i in range(len(price_data)):
-            match = re.search(r'{0}'.format(price_data[i]['Date']), array_test())
+            match = re.search(r'{0}'.format(price_data[i]['Date']), range_date)
             if match is None:
                 continue
             stock = Stock()

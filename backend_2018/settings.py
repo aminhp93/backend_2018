@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'tinder',
+    'core',
     'rest_framework'
 ]
 
