@@ -40,7 +40,7 @@ def find_index_array_string(array, string):
 
 def array_test():
     # return '[' + date_2017() + ',' + date_2018() + ']'
-    return '[' + date_2019() + ']'
+    return '[' + date_2018() + ',' + date_2019() + ']'
 
 def range_date_to_update():
     last_updated_time = '"2019-01-02T00:00:00Z"'
@@ -63,5 +63,5 @@ def range_date_to_update():
         span_start_date = match_start_date.span()[0]
         
     if last_updated_time == '"2019-01-02T00:00:00Z"':
-        return date_2019()[span_start_date:span_end_date]    
+        return date_2019()[span_start_date:span_end_date]
     return date_2019()[span_start_date + 23:span_end_date]

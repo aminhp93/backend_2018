@@ -6,13 +6,24 @@ import requests
 import json
 from .models import Stock
 import re
-
+from datetime import datetime
 from helpers.functionUtils import (
     count_trading_times,
     find_index_array_object,
     array_test,
     find_index_array_string,
     range_date_to_update
+)
+
+from helpers.constants import (
+    date_2012, 
+    date_2013, 
+    date_2014, 
+    date_2015, 
+    date_2016,
+    date_2017,
+    date_2018,
+    date_2019
 )
 
 
@@ -68,9 +79,28 @@ def stock_create(request):
             return JsonResponse({'data': 'Invalid data'})
         if not 'price_data' in body:
             return JsonResponse({'data': 'Invalid data'})
-        # stock.price_data = body['price_data']
+        if not 'Year' in body:
+            return JsonResponse({'data': 'Invalid data'})
         price_data = json.loads(body['price_data'])
-        range_date = range_date_to_update()
+        Year = body['Year']
+        if Year == '2012':
+            range_date = date_2012()
+        elif Year == '2013':
+            range_date = date_2013()
+        elif Year == '2014':
+            range_date = date_2014()
+        elif Year == '2015':
+            range_date = date_2015()
+        elif Year == '2016':
+            range_date = date_2016()
+        elif Year == '2017':
+            range_date = date_2017()
+        elif Year == '2018':
+            range_date = date_2018()
+        elif Year == '2019':
+            range_date = range_date_to_update()
+        else:
+            range_date = range_date_to_update()
         for i in range(len(price_data)):
             match = re.search(r'{0}'.format(price_data[i]['Date']), range_date)
             if match is None:
@@ -233,6 +263,9 @@ def stock_filter(request):
         today_capitalization_min = 0
         percentage_change_in_price_min = -99999999
         Symbol_search = ''
+        Date = '"' + datetime.now().strftime("%Y-%m-%d") + 'T00:00:00Z"'
+        if 'Date' in body:
+            Date = body['Date']
         if 'Symbol_search' in body:
             Symbol_search = body['Symbol_search']
         if 'Volume_min' in body:
@@ -251,8 +284,20 @@ def stock_filter(request):
             today_capitalization_min = body['today_capitalization_min']
         if 'percentage_change_in_price_min' in body:
             percentage_change_in_price_min = body['percentage_change_in_price_min']
-        filtered_stocks = Stock.objects.filter(Q(Volume__gt=Volume_min) & Q(RSI_14__gt=RSI_14_min) & Q(RSI_14__lt=RSI_14_max) & Q(RSI_14_diff__gt=RSI_14_diff_min) & Q(ROE__gt=ROE_min) & Q(EPS__gt=EPS_min) & Q(
-            today_capitalization__gt=today_capitalization_min) & Q(percentage_change_in_price__gt=percentage_change_in_price_min) & Q(Symbol__regex=r'{0}'.format(Symbol_search))).order_by('-today_capitalization')
+        print(Date, today_capitalization_min, percentage_change_in_price_min)
+        filtered_stocks = Stock.objects.filter(
+            # Q(Volume__gt=Volume_min) & 
+            # Q(RSI_14__gt=RSI_14_min) & 
+            # Q(RSI_14__lt=RSI_14_max) & 
+            # Q(RSI_14_diff__gt=RSI_14_diff_min) & 
+            # Q(ROE__gt=ROE_min) & 
+            # Q(EPS__gt=EPS_min) & 
+            Q(Date=Date) & 
+            Q(today_capitalization__gt=today_capitalization_min) & 
+            Q(percentage_change_in_price__gt=percentage_change_in_price_min)
+            # Q(Symbol__regex=r'{0}'.format(Symbol_search))
+        ).order_by('-today_capitalization')
+        
         for stock in filtered_stocks:
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
@@ -343,7 +388,6 @@ def stock_backtest(request):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))       
         date_array = json.loads(array_test())
-        # print(date_array)
         k = 0
         while k < len(date_array) - 18:
             today_capitalization_min = 0
@@ -353,10 +397,11 @@ def stock_backtest(request):
                 Q(today_capitalization__gt=today_capitalization_min) &
                 Q(percentage_change_in_price__gt=percentage_change_in_price_min)
                 ).order_by('-today_capitalization')
-            # print(367, filtered_stocks)
-            increment_number = 19
+            increment_number = 18
             if len(filtered_stocks) > 0:
                 stock_obj = filtered_stocks[0]
+                if len(filtered_stocks) > 1:
+                    stock_obj = filtered_stocks[1]
                 start_obj = stock_obj
                 m = 3
                 end_objs = Stock.objects.filter(
@@ -365,25 +410,21 @@ def stock_backtest(request):
                 )
                 if len(end_objs) > 0:
                     end_obj = end_objs[0]
-                    # print(381, end_obj)
-                    while m < 19:
+                    while m < 18:
                         filtered_end_obj = Stock.objects.filter(
                             Q(Date=date_array[k+m]) & 
                             Q(Symbol=start_obj.Symbol)
                         )
-                        # print(388, filtered_end_obj)
                         if len(filtered_end_obj) > 0:
                             end_obj = filtered_end_obj[0]
                             if start_obj.Open * 1.05 <= end_obj.High:
                                 increment_number = m
                                 break
                         m += 1
-                    # print(393, start_obj, end_obj)
                     result.append({
                         'Symbol': stock_obj.Symbol,
                         'start_obj': get_default_attributes(start_obj),
                         'end_obj': get_default_attributes(end_obj)
                     })
             k += increment_number
-        # print(405, result)
     return JsonResponse({'data': result})
