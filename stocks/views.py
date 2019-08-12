@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
 from .models import Stock
+from core.models import Config
 import re
 from datetime import datetime
 from helpers.functionUtils import (
@@ -15,6 +16,7 @@ from helpers.functionUtils import (
     range_date_to_update
 )
 
+from posts.models import Post
 from helpers.constants import (
     date_2012, 
     date_2013, 
@@ -263,9 +265,13 @@ def stock_filter(request):
         today_capitalization_min = 0
         percentage_change_in_price_min = -99999999
         Symbol_search = ''
-        Date = '"' + datetime.now().strftime("%Y-%m-%d") + 'T00:00:00Z"'
-        if 'Date' in body:
-            Date = body['Date']
+        # Date = '"' + datetime.now().strftime("%Y-%m-%d") + 'T00:00:00Z"'
+        # if 'Date' in body:
+        #     Date = body['Date']
+        last_updated_time = ''
+        configs = Config.objects.filter(key='LAST_UPDATED_TIME')
+        if len(configs) > 0:
+            last_updated_time =  configs[0].value[1:-1]
         if 'Symbol_search' in body:
             Symbol_search = body['Symbol_search']
         if 'Volume_min' in body:
@@ -284,7 +290,7 @@ def stock_filter(request):
             today_capitalization_min = body['today_capitalization_min']
         if 'percentage_change_in_price_min' in body:
             percentage_change_in_price_min = body['percentage_change_in_price_min']
-        print(Date, today_capitalization_min, percentage_change_in_price_min)
+        # print(last_updated_time, today_capitalization_min, percentage_change_in_price_min)
         filtered_stocks = Stock.objects.filter(
             # Q(Volume__gt=Volume_min) & 
             # Q(RSI_14__gt=RSI_14_min) & 
@@ -292,7 +298,7 @@ def stock_filter(request):
             # Q(RSI_14_diff__gt=RSI_14_diff_min) & 
             # Q(ROE__gt=ROE_min) & 
             # Q(EPS__gt=EPS_min) & 
-            Q(Date=Date) & 
+            Q(Date=last_updated_time) & 
             Q(today_capitalization__gt=today_capitalization_min) & 
             Q(percentage_change_in_price__gt=percentage_change_in_price_min)
             # Q(Symbol__regex=r'{0}'.format(Symbol_search))
@@ -384,47 +390,78 @@ def mapData(data):
 
 @csrf_exempt
 def stock_backtest(request):
-    result = []
     if request.method == 'POST':
-        body = json.loads(request.body.decode('utf-8'))       
-        date_array = json.loads(array_test())
-        k = 0
-        while k < len(date_array) - 18:
-            today_capitalization_min = 0
-            percentage_change_in_price_min = 0.01
-            filtered_stocks = Stock.objects.filter(
-                Q(Date=date_array[k]) &
-                Q(today_capitalization__gt=today_capitalization_min) &
-                Q(percentage_change_in_price__gt=percentage_change_in_price_min)
-                ).order_by('-today_capitalization')
-            increment_number = 18
-            if len(filtered_stocks) > 0:
-                stock_obj = filtered_stocks[0]
-                if len(filtered_stocks) > 1:
-                    stock_obj = filtered_stocks[1]
-                start_obj = stock_obj
-                m = 3
-                end_objs = Stock.objects.filter(
-                    Q(Date=date_array[k+18]) & 
-                    Q(Symbol=start_obj.Symbol)
-                )
-                if len(end_objs) > 0:
-                    end_obj = end_objs[0]
-                    while m < 18:
-                        filtered_end_obj = Stock.objects.filter(
-                            Q(Date=date_array[k+m]) & 
-                            Q(Symbol=start_obj.Symbol)
-                        )
-                        if len(filtered_end_obj) > 0:
-                            end_obj = filtered_end_obj[0]
-                            if start_obj.Open * 1.05 <= end_obj.High:
-                                increment_number = m
-                                break
-                        m += 1
-                    result.append({
-                        'Symbol': stock_obj.Symbol,
-                        'start_obj': get_default_attributes(start_obj),
-                        'end_obj': get_default_attributes(end_obj)
-                    })
-            k += increment_number
-    return JsonResponse({'data': result})
+        all_backtests = []
+        body = json.loads(request.body.decode('utf-8'))
+        array = []
+        for m in range(1, 13):
+            index = m * 23 * 16
+            item = '[' + date_2017()[index:] + ',' + date_2018()[0:index - 1] + ']'
+            array.append(item)
+        print(array)
+        for n in range(len(array)):
+            date_array = json.loads(array[n])
+            for i in range(7, 8):
+                for j in range(1, 2):
+                    # for k in range(105, 111):
+                    # print(i, j)
+                    all_backtests.append(backtest(date_array, i, j))
+                    title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j)
+                    filtered_posts = Post.objects.filter(title=title)
+                    if len(filtered_posts) == 0:
+                        post = Post()
+                        post.title = title
+                        post.content = json.dumps(all_backtests)
+                        post.save()
+    return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})
+
+def backtest(date_array, time_period, position_stock):
+    result = []
+    NAV = 20
+    k = 0
+    while k < len(date_array) - time_period:
+        today_capitalization_min = 0
+        percentage_change_in_price_min = 0.01
+        filtered_stocks = Stock.objects.filter(
+            Q(Date=date_array[k]) &
+            Q(today_capitalization__gt=today_capitalization_min) &
+            Q(percentage_change_in_price__gt=percentage_change_in_price_min)
+            ).order_by('-today_capitalization')
+        increment_number = time_period
+        if len(filtered_stocks) > 0:
+            stock_obj = filtered_stocks[0]
+            if len(filtered_stocks) > position_stock:
+                stock_obj = filtered_stocks[position_stock]
+            start_obj = stock_obj
+            m = 3
+            end_objs = Stock.objects.filter(
+                Q(Date=date_array[k+time_period]) & 
+                Q(Symbol=start_obj.Symbol)
+            )
+            if len(end_objs) > 0:
+                end_obj = end_objs[0]
+                while m < time_period:
+                    filtered_end_obj = Stock.objects.filter(
+                        Q(Date=date_array[k+m]) & 
+                        Q(Symbol=start_obj.Symbol)
+                    )
+                    if len(filtered_end_obj) > 0:
+                        end_obj = filtered_end_obj[0]
+                        if start_obj.Open * 1.05 <= end_obj.High:
+                            increment_number = m
+                            break
+                    m += 1
+                mapped_start_obj = get_default_attributes(start_obj)
+                mapped_end_obj = get_default_attributes(end_obj)
+                volume = NAV * 1000000 / mapped_start_obj["Open"]
+                NAV = NAV * mapped_end_obj['High'] / mapped_start_obj["Open"]
+                result.append({
+                    'Symbol': stock_obj.Symbol,
+                    'start_obj': mapped_start_obj,
+                    'end_obj': mapped_end_obj,
+                    'volume': volume,
+                    'NAV': NAV
+                })
+        k += increment_number
+    # print(450, result)
+    return result

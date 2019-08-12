@@ -40,7 +40,9 @@ def find_index_array_string(array, string):
 
 def array_test():
     # return '[' + date_2017() + ',' + date_2018() + ']'
-    return '[' + date_2018() + ',' + date_2019() + ']'
+    # return '[' + date_2016()[23:-1] + ',' + date_2017()[0:22] + ']'
+    # return '[' + date_2016()[23 + 23:-1] + ',' + date_2017()[0:22 + 23] + ']'
+    return '[' + date_2014()[2300:] + ',' + date_2015()[0:2299] + ']'
 
 def range_date_to_update():
     last_updated_time = '"2019-01-02T00:00:00Z"'
