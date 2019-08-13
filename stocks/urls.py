@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^filter/$', views.stock_filter, name='filter'),
     url(r'^analyze/$', views.stock_analyze, name='analyze'),
     url(r'^backtest/$', views.stock_backtest, name='backtest'),
+    url(r'^results/$', views.stock_backtest_results, name='backtest-results'),
 ]

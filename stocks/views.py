@@ -398,9 +398,10 @@ def stock_backtest(request):
             index = m * 23 * 16
             item = '[' + date_2017()[index:] + ',' + date_2018()[0:index - 1] + ']'
             array.append(item)
-        print(array)
-        for n in range(len(array)):
-            date_array = json.loads(array[n])
+        # print(array)
+        for n in range(0, 1):
+            # date_array = json.loads(array[n])
+            date_array = json.loads(array_test())
             for i in range(7, 8):
                 for j in range(1, 2):
                     # for k in range(105, 111):
@@ -433,6 +434,7 @@ def backtest(date_array, time_period, position_stock):
             if len(filtered_stocks) > position_stock:
                 stock_obj = filtered_stocks[position_stock]
             start_obj = stock_obj
+            print(437, start_obj)
             m = 3
             end_objs = Stock.objects.filter(
                 Q(Date=date_array[k+time_period]) & 
@@ -455,13 +457,28 @@ def backtest(date_array, time_period, position_stock):
                 mapped_end_obj = get_default_attributes(end_obj)
                 volume = NAV * 1000000 / mapped_start_obj["Open"]
                 NAV = NAV * mapped_end_obj['High'] / mapped_start_obj["Open"]
+                if mapped_start_obj.Open < mapped_end_obj.High:
+                    sell_price = mapped_start_obj.Open * 1.05
+                else:
+                    sell_price = mapped_start_obj.Open * 0.95
                 result.append({
                     'Symbol': stock_obj.Symbol,
                     'start_obj': mapped_start_obj,
                     'end_obj': mapped_end_obj,
+                    'sell_price': sell_price,
                     'volume': volume,
                     'NAV': NAV
                 })
         k += increment_number
     # print(450, result)
     return result
+
+def stock_backtest_results(request):
+    posts = Post.objects.filter(title__regex=r'position_stock')
+    results = []
+    for i in range(0, len(posts)):
+        results.append({
+            'title': posts[i].title,
+            'content': posts[i].content
+        })
+    return JsonResponse({'data': results})
