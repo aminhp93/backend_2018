@@ -399,27 +399,30 @@ def stock_backtest(request):
             item = '[' + date_2017()[index:] + ',' + date_2018()[0:index - 1] + ']'
             array.append(item)
         # print(array)
-        for n in range(0, 1):
-            # date_array = json.loads(array[n])
-            date_array = json.loads(array_test())
-            for i in range(7, 8):
-                for j in range(1, 2):
-                    # for k in range(105, 111):
+        for n in range(0, len(array)):
+        # for n in range(0, 1):
+            date_array = json.loads(array[n])
+            # date_array = json.loads(array_test())
+            for i in range(3, 30):
+                for j in range(0, 10):
+                    for k in range(103, 120):
                     # print(i, j)
-                    all_backtests.append(backtest(date_array, i, j))
-                    title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j)
-                    filtered_posts = Post.objects.filter(title=title)
-                    if len(filtered_posts) == 0:
-                        post = Post()
-                        post.title = title
-                        post.content = json.dumps(all_backtests)
-                        post.save()
+                        all_backtests.append(backtest(date_array, i, j, k/100))
+                        title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
+                        filtered_posts = Post.objects.filter(title=title)
+                        if len(filtered_posts) == 0:
+                            post = Post()
+                            post.title = title
+                            post.content = json.dumps(all_backtests)
+                            post.save()
     return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})
 
-def backtest(date_array, time_period, position_stock):
+def backtest(date_array, time_period, position_stock, percent):
+    # percent = 0.05
     result = []
     NAV = 20
     k = 0
+    # print(date_array, time_period, position_stock)
     while k < len(date_array) - time_period:
         today_capitalization_min = 0
         percentage_change_in_price_min = 0.01
@@ -429,6 +432,7 @@ def backtest(date_array, time_period, position_stock):
             Q(percentage_change_in_price__gt=percentage_change_in_price_min)
             ).order_by('-today_capitalization')
         increment_number = time_period
+        # print(filtered_stocks, 433)
         if len(filtered_stocks) > 0:
             stock_obj = filtered_stocks[0]
             if len(filtered_stocks) > position_stock:
@@ -442,6 +446,8 @@ def backtest(date_array, time_period, position_stock):
             )
             if len(end_objs) > 0:
                 end_obj = end_objs[0]
+                buy_price = start_obj.Open
+                sell_price = end_obj.Close
                 while m < time_period:
                     filtered_end_obj = Stock.objects.filter(
                         Q(Date=date_array[k+m]) & 
@@ -449,22 +455,25 @@ def backtest(date_array, time_period, position_stock):
                     )
                     if len(filtered_end_obj) > 0:
                         end_obj = filtered_end_obj[0]
-                        if start_obj.Open * 1.05 <= end_obj.High:
+                        if end_obj.Low <= (1 - percent) * buy_price:
+                            sell_price = (1 - percent) * buy_price
+                            increment_number = m
+                            break
+                        if end_obj.High >= (1 + percent) * buy_price:
+                            sell_price = (1 + percent) * buy_price
                             increment_number = m
                             break
                     m += 1
                 mapped_start_obj = get_default_attributes(start_obj)
                 mapped_end_obj = get_default_attributes(end_obj)
-                volume = NAV * 1000000 / mapped_start_obj["Open"]
-                NAV = NAV * mapped_end_obj['High'] / mapped_start_obj["Open"]
-                if mapped_start_obj.Open < mapped_end_obj.High:
-                    sell_price = mapped_start_obj.Open * 1.05
-                else:
-                    sell_price = mapped_start_obj.Open * 0.95
+                volume = NAV * 1000000 / buy_price
+                
+                NAV = NAV * sell_price / buy_price
                 result.append({
                     'Symbol': stock_obj.Symbol,
                     'start_obj': mapped_start_obj,
                     'end_obj': mapped_end_obj,
+                    'buy_price': buy_price,
                     'sell_price': sell_price,
                     'volume': volume,
                     'NAV': NAV

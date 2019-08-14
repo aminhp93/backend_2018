@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, date
 from core.models import Config
 from .constants import date_2012, date_2013, date_2014, date_2015, date_2016, date_2017, date_2018, date_2019
 
+
 def count_trading_times(data, start_time, end_time):
     # print(data)
     array_start_index = []
@@ -15,12 +16,14 @@ def count_trading_times(data, start_time, end_time):
             array_start_index.append(i)
         if data[i]['Date'][0:4] == end_time[0:4] and data[i]['Date'][5:7] == end_time[5:7]:
             array_end_index.append(i)
-    print(data[array_start_index[0]]['Date'], data[array_end_index[-1]]['Date'], )
+    print(data[array_start_index[0]]['Date'],
+          data[array_end_index[-1]]['Date'], )
     return {
         'start_obj': data[array_start_index[0]],
         'end_obj': data[array_end_index[-1]],
         'times': array_end_index[-1] - array_start_index[0] + 1
     }
+
 
 def find_index_array_object(array, key, value):
     i = 0
@@ -30,6 +33,7 @@ def find_index_array_object(array, key, value):
         i += 1
     return None
 
+
 def find_index_array_string(array, string):
     i = 0
     while i < len(array):
@@ -38,11 +42,13 @@ def find_index_array_string(array, string):
         i += 1
     return None
 
+
 def array_test():
     # return '[' + date_2017() + ',' + date_2018() + ']'
     # return '[' + date_2016()[23:-1] + ',' + date_2017()[0:22] + ']'
     # return '[' + date_2016()[23 + 23:-1] + ',' + date_2017()[0:22 + 23] + ']'
-    return '[' + date_2014()[2300:] + ',' + date_2015()[0:2299] + ']'
+    return '[' + date_2017()[2300:] + ',' + date_2018()[0:2299] + ']'
+
 
 def range_date_to_update():
     last_updated_time = '"2019-01-02T00:00:00Z"'
@@ -54,7 +60,8 @@ def range_date_to_update():
     end_date = datetime.now().strftime("%Y-%m-%d")
     if end_time < '16:00':
         end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    match_end_date = re.search(r'{0}'.format('"' + end_date + 'T00:00:00Z"'), date_2019())
+    match_end_date = re.search(r'{0}'.format(
+        '"' + end_date + 'T00:00:00Z"'), date_2019())
     span_end_date = 0
     if match_end_date is not None:
         span_end_date = match_end_date.span()[1]
@@ -63,7 +70,7 @@ def range_date_to_update():
     span_start_date = 0
     if match_start_date is not None:
         span_start_date = match_start_date.span()[0]
-        
+
     if last_updated_time == '"2019-01-02T00:00:00Z"':
         return date_2019()[span_start_date:span_end_date]
     return date_2019()[span_start_date + 23:span_end_date]
