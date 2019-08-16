@@ -7,13 +7,14 @@ import json
 from .models import Stock
 from core.models import Config
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from helpers.functionUtils import (
     count_trading_times,
     find_index_array_object,
     array_test,
     find_index_array_string,
-    range_date_to_update
+    range_date_to_update,
+    get_last_updated_time,
 )
 
 from posts.models import Post
@@ -66,7 +67,11 @@ def get_analyze_attributes(data, percent, period):
 
 @csrf_exempt
 def stock_list(request):
-    all_stocks = Stock.objects.filter(Date=date_2019()[-22:])
+    last_updated_time = get_last_updated_time()
+    if last_updated_time == None:
+        return JsonResponse({'stocks': []})
+    all_stocks = Stock.objects.filter(Date__regex=r'{0}'.format(last_updated_time))
+    print(last_updated_time)
     result = []
     for stock in all_stocks:
         result.append(get_default_attributes(stock))
@@ -250,9 +255,12 @@ def stock_filter(request):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         result = []
+        last_updated_time = get_last_updated_time()
+        if last_updated_time == None:
+            return JsonResponse({'stocks': []})
         if 'watching_stocks' in body:
             watching_stocks = body['watching_stocks']
-            filtered_stocks = Stock.objects.filter(Symbol__in=watching_stocks)
+            filtered_stocks = Stock.objects.filter(Q(Symbol__in=watching_stocks) & Q(Date__regex=r'{0}'.format(last_updated_time)))
             for stock in filtered_stocks:
                 result.append(get_default_attributes(stock))
             return JsonResponse({'stocks': result})
@@ -268,10 +276,7 @@ def stock_filter(request):
         # Date = '"' + datetime.now().strftime("%Y-%m-%d") + 'T00:00:00Z"'
         # if 'Date' in body:
         #     Date = body['Date']
-        last_updated_time = ''
-        configs = Config.objects.filter(key='LAST_UPDATED_TIME')
-        if len(configs) > 0:
-            last_updated_time =  configs[0].value[1:-1]
+        
         if 'Symbol_search' in body:
             Symbol_search = body['Symbol_search']
         if 'Volume_min' in body:
@@ -298,7 +303,7 @@ def stock_filter(request):
             # Q(RSI_14_diff__gt=RSI_14_diff_min) & 
             # Q(ROE__gt=ROE_min) & 
             # Q(EPS__gt=EPS_min) & 
-            Q(Date=last_updated_time) & 
+            Q(Date__regex=r'{0}'.format(last_updated_time)) & 
             Q(today_capitalization__gt=today_capitalization_min) & 
             Q(percentage_change_in_price__gt=percentage_change_in_price_min)
             # Q(Symbol__regex=r'{0}'.format(Symbol_search))
@@ -393,29 +398,35 @@ def stock_backtest(request):
     if request.method == 'POST':
         all_backtests = []
         body = json.loads(request.body.decode('utf-8'))
+        test = False
+        if 'test' in body:
+            test = True
         array = []
-        for m in range(1, 13):
+        for m in range(1, 2):
             index = m * 23 * 16
-            item = '[' + date_2017()[index:] + ',' + date_2018()[0:index - 1] + ']'
+            item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
             array.append(item)
         # print(array)
         for n in range(0, len(array)):
         # for n in range(0, 1):
             date_array = json.loads(array[n])
             # date_array = json.loads(array_test())
-            for i in range(3, 30):
-                for j in range(0, 10):
-                    for k in range(103, 120):
+            for i in range(5, 19):
+                for j in range(0, 2):
+                    for k in range(105, 106):
                     # print(i, j)
-                        all_backtests.append(backtest(date_array, i, j, k/100))
                         title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
                         filtered_posts = Post.objects.filter(title=title)
                         if len(filtered_posts) == 0:
-                            post = Post()
-                            post.title = title
-                            post.content = json.dumps(all_backtests)
-                            post.save()
-    return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})
+                            all_backtests.append(backtest(date_array, i, j, k/100))
+                            if test == False:
+                                post = Post()
+                                post.title = title
+                                post.content = json.dumps(all_backtests)
+                                post.save()
+        if all_backtests:
+            return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})        
+    return JsonResponse({'data': [], 'data1': []})
 
 def backtest(date_array, time_period, position_stock, percent):
     # percent = 0.05
@@ -486,8 +497,11 @@ def stock_backtest_results(request):
     posts = Post.objects.filter(title__regex=r'position_stock')
     results = []
     for i in range(0, len(posts)):
+        post = posts[i]
+        title = post.title
+        content = json.loads(post.content)[-1][-1]['NAV']
         results.append({
-            'title': posts[i].title,
-            'content': posts[i].content
+            'title': title,
+            'content': content,
         })
     return JsonResponse({'data': results})

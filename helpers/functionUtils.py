@@ -74,3 +74,15 @@ def range_date_to_update():
     if last_updated_time == '"2019-01-02T00:00:00Z"':
         return date_2019()[span_start_date:span_end_date]
     return date_2019()[span_start_date + 23:span_end_date]
+
+def get_last_updated_time():
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    today_hour = (datetime.now() - timedelta(hours=17)).strftime("%H")
+    configs = Config.objects.filter(key='LAST_UPDATED_TIME')
+    last_updated_time = None
+    if configs:
+        last_updated_time = configs[0].value[1:11]
+    if today_date == last_updated_time:
+        if today_hour < '16' and today_hour > '00':
+            last_updated_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    return last_updated_time
