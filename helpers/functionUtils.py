@@ -51,29 +51,23 @@ def array_test():
 
 
 def range_date_to_update():
-    last_updated_time = '"2019-01-02T00:00:00Z"'
-    configs = Config.objects.filter(key='LAST_UPDATED_TIME')
-    if len(configs) > 0:
-        last_updated_time = configs[0].value
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    search_today_date = re.search(r'{0}'.format(today_date), date_2019())
+    if search_today_date == None:
+        return ''
+    end_index = search_today_date.span()[0]
+
+    last_updated_time = get_last_updated_time()
+    if last_updated_time is None:
+        last_updated_time = '2019-01-02'
+    last_updated_time = '"' + last_updated_time + 'T00:00:00Z"'
     start_time = last_updated_time
-    end_time = datetime.now().strftime("%H:%M")
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    if end_time < '16:00':
-        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    match_end_date = re.search(r'{0}'.format(
-        '"' + end_date + 'T00:00:00Z"'), date_2019())
-    span_end_date = 0
-    if match_end_date is not None:
-        span_end_date = match_end_date.span()[1]
-
     match_start_date = re.search(r'{0}'.format(start_time), date_2019())
-    span_start_date = 0
+    start_index = 0
     if match_start_date is not None:
-        span_start_date = match_start_date.span()[0]
-
-    if last_updated_time == '"2019-01-02T00:00:00Z"':
-        return date_2019()[span_start_date:span_end_date]
-    return date_2019()[span_start_date + 23:span_end_date]
+        start_index = match_start_date.span()[1]
+    print(start_index, end_index)
+    return date_2019()[start_index:end_index + 21]
 
 def get_last_updated_time():
     today_date = datetime.now().strftime("%Y-%m-%d")
