@@ -52,6 +52,11 @@ def array_test():
 
 def range_date_to_update():
     today_date = datetime.now().strftime("%Y-%m-%d")
+    weekday = datetime.now().strftime("%a")
+    if weekday == 'Sat':
+        today_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    elif weekday == 'Sun':
+        today_date = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
     search_today_date = re.search(r'{0}'.format(today_date), date_2019())
     if search_today_date == None:
         return ''
@@ -66,7 +71,7 @@ def range_date_to_update():
     start_index = 0
     if match_start_date is not None:
         start_index = match_start_date.span()[1]
-    print(start_index, end_index)
+    # print(start_index, end_index)
     return date_2019()[start_index:end_index + 21]
 
 def get_last_updated_time():

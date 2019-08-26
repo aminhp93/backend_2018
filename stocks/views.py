@@ -108,7 +108,6 @@ def stock_create(request):
             range_date = range_date_to_update()
         else:
             range_date = range_date_to_update()
-        print(range_date)
         for i in range(len(price_data)):
             match = re.search(r'{0}'.format(price_data[i]['Date']), range_date)
             if match is None:
@@ -261,7 +260,7 @@ def stock_filter(request):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         result = []
-        last_updated_time = get_last_updated_time()
+        last_updated_time = get_last_updated_time() + 'T00:00:00Z'
         if last_updated_time == None:
             return JsonResponse({'stocks': []})
         if 'watching_stocks' in body:
@@ -305,7 +304,8 @@ def stock_filter(request):
             # Q(RSI_14_diff__gt=RSI_14_diff_min) & 
             # Q(ROE__gt=ROE_min) & 
             # Q(EPS__gt=EPS_min) & 
-            Q(Date__regex=r'{0}'.format(last_updated_time)) & 
+            # Q(Date__regex=r'{0}'.format(last_updated_time)) & 
+            Q(Date=last_updated_time) &
             Q(today_capitalization__gt=today_capitalization_min) & 
             Q(percentage_change_in_price__gt=percentage_change_in_price_min) &
             Q(Symbol__regex=r'{0}'.format(Symbol_search))
@@ -401,45 +401,62 @@ def stock_backtest(request):
         all_backtests = []
         body = json.loads(request.body.decode('utf-8'))
         test = False
-        if 'test' in body:
-            test = True
         array = []
         for m in range(1, 2):
             index = m * 23 * 16
             item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
             array.append(item)
-        # print(array)
-        for n in range(0, len(array)):
-        # for n in range(0, 1):
+        # for n in range(0, len(array)):
+        for n in range(0, 1):
             date_array = json.loads(array[n])
-            # date_array = json.loads(array_test())
-            for i in range(5, 19):
-                for j in range(0, 2):
-                    for k in range(105, 106):
-                    # print(i, j)
-                        title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
-                        filtered_posts = Post.objects.filter(title=title)
-                        if len(filtered_posts) == 0:
-                            all_backtests.append(backtest(date_array, i, j, k/100))
-                            if test == False:
-                                post = Post()
-                                post.title = title
-                                post.content = json.dumps(all_backtests)
-                                post.save()
+        if 'test' in body:
+            test = True
+            print(body)
+            time_period = body.get('time_period')
+            position_stock = body.get('position_stock')
+            percent = body.get('percent')
+            all_backtests.append(backtest(date_array, time_period, position_stock, percent/100))
+        else:
+            array = []
+            for m in range(1, 2):
+                index = m * 23 * 16
+                item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
+                array.append(item)
+            # print(array)
+            
+            # for n in range(0, 1):
+                date_array = json.loads(array[n])
+                # date_array = json.loads(array_test())
+                for i in range(5, 6):
+                    for j in range(1, 2):
+                        for k in range(105, 106):
+                        # print(i, j)
+                            title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
+                            filtered_posts = Post.objects.filter(title=title)
+                            if len(filtered_posts) == 0:
+                                all_backtests.append(backtest(date_array, i, j, k/100))
+                                if test == False:
+                                    post = Post()
+                                    post.title = title
+                                    post.content = json.dumps(all_backtests)
+                                    post.save()
         if all_backtests:
-            return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})        
+            return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})    
     return JsonResponse({'data': [], 'data1': []})
 
 def backtest(date_array, time_period, position_stock, percent):
     # percent = 0.05
     result = []
-    NAV = 20
+    NAV = 5
+    init_NAV = NAV
+    total_NAV = init_NAV
     k = 0
     # print(date_array, time_period, position_stock)
     while k < len(date_array) - time_period:
         today_capitalization_min = 0
         percentage_change_in_price_min = 0.01
         filtered_stocks = Stock.objects.filter(
+            ~Q(Symbol__in=['QPH']) &
             Q(Date=date_array[k]) &
             Q(today_capitalization__gt=today_capitalization_min) &
             Q(percentage_change_in_price__gt=percentage_change_in_price_min)
@@ -480,8 +497,9 @@ def backtest(date_array, time_period, position_stock, percent):
                 mapped_start_obj = get_default_attributes(start_obj)
                 mapped_end_obj = get_default_attributes(end_obj)
                 volume = NAV * 1000000 / buy_price
+                total_NAV = total_NAV + init_NAV
                 
-                NAV = NAV * sell_price / buy_price
+                NAV = NAV * sell_price / buy_price + init_NAV
                 result.append({
                     'Symbol': stock_obj.Symbol,
                     'start_obj': mapped_start_obj,
@@ -489,7 +507,8 @@ def backtest(date_array, time_period, position_stock, percent):
                     'buy_price': buy_price,
                     'sell_price': sell_price,
                     'volume': volume,
-                    'NAV': NAV
+                    'NAV': NAV,
+                    'total_NAV': total_NAV
                 })
         k += increment_number
     # print(450, result)
