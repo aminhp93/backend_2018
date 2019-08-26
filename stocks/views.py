@@ -108,7 +108,6 @@ def stock_create(request):
             range_date = range_date_to_update()
         else:
             range_date = range_date_to_update()
-        print(range_date)
         for i in range(len(price_data)):
             match = re.search(r'{0}'.format(price_data[i]['Date']), range_date)
             if match is None:
@@ -261,7 +260,7 @@ def stock_filter(request):
     if request.method == 'POST':
         body = json.loads(request.body.decode('utf-8'))
         result = []
-        last_updated_time = get_last_updated_time()
+        last_updated_time = get_last_updated_time() + 'T00:00:00Z'
         if last_updated_time == None:
             return JsonResponse({'stocks': []})
         if 'watching_stocks' in body:
@@ -305,7 +304,8 @@ def stock_filter(request):
             # Q(RSI_14_diff__gt=RSI_14_diff_min) & 
             # Q(ROE__gt=ROE_min) & 
             # Q(EPS__gt=EPS_min) & 
-            Q(Date__regex=r'{0}'.format(last_updated_time)) & 
+            # Q(Date__regex=r'{0}'.format(last_updated_time)) & 
+            Q(Date=last_updated_time) &
             Q(today_capitalization__gt=today_capitalization_min) & 
             Q(percentage_change_in_price__gt=percentage_change_in_price_min) &
             Q(Symbol__regex=r'{0}'.format(Symbol_search))
