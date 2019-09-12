@@ -405,41 +405,32 @@ def stock_backtest(request):
         for m in range(1, 2):
             index = m * 23 * 16
             item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
+            # item = '[' + date_2018()[23*16:23*22-1] + ']'
             array.append(item)
+
         # for n in range(0, len(array)):
         for n in range(0, 1):
             date_array = json.loads(array[n])
         if 'test' in body:
             test = True
-            print(body)
             time_period = body.get('time_period')
             position_stock = body.get('position_stock')
             percent = body.get('percent')
-            all_backtests.append(backtest(date_array, time_period, position_stock, percent/100))
-        else:
-            array = []
-            for m in range(1, 2):
-                index = m * 23 * 16
-                item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
-                array.append(item)
-            # print(array)
-            
-            # for n in range(0, 1):
-                date_array = json.loads(array[n])
-                # date_array = json.loads(array_test())
-                for i in range(5, 6):
-                    for j in range(1, 2):
-                        for k in range(105, 106):
-                        # print(i, j)
-                            title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
-                            filtered_posts = Post.objects.filter(title=title)
-                            if len(filtered_posts) == 0:
-                                all_backtests.append(backtest(date_array, i, j, k/100))
-                                if test == False:
-                                    post = Post()
-                                    post.title = title
-                                    post.content = json.dumps(all_backtests)
-                                    post.save()
+            all_backtests.append(backtest(date_array, time_period, position_stock, percent/100 - 1))
+        else:            
+            for i in range(5, 6):
+                for j in range(1, 2):
+                    for k in range(105, 106):
+                    # print(i, j)
+                        title = array[n][2:22] + '|' + array[n][-22:-2] + 'time_period' + str(i) + 'position_stock' + str(j) + 'percent' + str(k)
+                        filtered_posts = Post.objects.filter(title=title)
+                        if len(filtered_posts) == 0:
+                            all_backtests.append(backtest(date_array, i, j, k/100 - 1))
+                            if test == False:
+                                post = Post()
+                                post.title = title
+                                post.content = json.dumps(all_backtests)
+                                post.save()
         if all_backtests:
             return JsonResponse({'data': all_backtests[0], 'data1': all_backtests})    
     return JsonResponse({'data': [], 'data1': []})
@@ -451,9 +442,8 @@ def backtest(date_array, time_period, position_stock, percent):
     init_NAV = NAV
     total_NAV = init_NAV
     k = 0
-    # print(date_array, time_period, position_stock)
     while k < len(date_array) - time_period:
-        today_capitalization_min = 0
+        today_capitalization_min = 5000000000
         percentage_change_in_price_min = 0.01
         filtered_stocks = Stock.objects.filter(
             ~Q(Symbol__in=['QPH']) &
@@ -462,7 +452,6 @@ def backtest(date_array, time_period, position_stock, percent):
             Q(percentage_change_in_price__gt=percentage_change_in_price_min)
             ).order_by('-today_capitalization')
         increment_number = time_period
-        # print(filtered_stocks, 433)
         if len(filtered_stocks) > 0:
             stock_obj = filtered_stocks[0]
             if len(filtered_stocks) > position_stock:
@@ -477,7 +466,7 @@ def backtest(date_array, time_period, position_stock, percent):
             if len(end_objs) > 0:
                 end_obj = end_objs[0]
                 buy_price = start_obj.Open
-                sell_price = end_obj.Close
+                sell_price = buy_price * (1 - percent)
                 while m < time_period:
                     filtered_end_obj = Stock.objects.filter(
                         Q(Date=date_array[k+m]) & 
@@ -486,7 +475,6 @@ def backtest(date_array, time_period, position_stock, percent):
                     if len(filtered_end_obj) > 0:
                         end_obj = filtered_end_obj[0]
                         if end_obj.Low <= (1 - percent) * buy_price:
-                            sell_price = (1 - percent) * buy_price
                             increment_number = m
                             break
                         if end_obj.High >= (1 + percent) * buy_price:
