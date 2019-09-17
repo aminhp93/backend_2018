@@ -12,7 +12,9 @@ cffi==1.12.3
 channels==2.2.0
 channels-redis==2.4.0
 chardet==3.0.4
+Click==7.0
 constantly==15.1.0
+croniter==0.3.30
 cryptography==2.7
 daphne==2.3.0
 dj-database-url==0.5.0
@@ -20,6 +22,7 @@ Django==2.1.1
 django-cors-headers==2.4.0
 django-filter==2.0.0
 django-heroku==0.3.1
+django-rq==2.1.0
 djangorestframework==3.8.2
 gunicorn==19.9.0
 hiredis==1.0.0
@@ -38,9 +41,13 @@ pycodestyle==2.4.0
 pycparser==2.19
 PyHamcrest==1.9.0
 pylint==2.1.1
+python-dateutil==2.8.0
 python-engineio==2.3.2
 pytz==2018.5
+redis==3.3.8
 requests==2.20.0
+rq==1.1.0
+rq-scheduler==0.9
 six==1.11.0
 Twisted==19.2.1
 txaio==18.8.1

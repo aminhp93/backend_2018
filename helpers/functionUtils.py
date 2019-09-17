@@ -2,7 +2,8 @@ import re
 from datetime import datetime, timedelta, date
 from core.models import Config
 from .constants import date_2012, date_2013, date_2014, date_2015, date_2016, date_2017, date_2018, date_2019
-
+from django_rq import job
+import django_rq
 
 def count_trading_times(data, start_time, end_time):
     # print(data)
@@ -17,7 +18,7 @@ def count_trading_times(data, start_time, end_time):
         if data[i]['Date'][0:4] == end_time[0:4] and data[i]['Date'][5:7] == end_time[5:7]:
             array_end_index.append(i)
     print(data[array_start_index[0]]['Date'],
-          data[array_end_index[-1]]['Date'], )
+          data[array_end_index[-1]]['Date'],1 )
     return {
         'start_obj': data[array_start_index[0]],
         'end_obj': data[array_end_index[-1]],
@@ -85,3 +86,22 @@ def get_last_updated_time():
         if today_hour < '16' and today_hour > '00':
             last_updated_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     return last_updated_time
+
+@job
+def printTask():
+    print(123, datetime.now().strftime('%Y-%m-%d: %H-%M-%s'))
+printTask.delay()
+
+def ready():
+    scheduler = django_rq.get_scheduler('default')
+    # delete any existing jobs in the scheduler when the app starts up
+    for job in scheduler.get_jobs():
+        print(99, job)
+        job.delete()
+
+    # Have 'mytask' run every 10s
+    
+    # return datetime.now().strftime('%M %D %H: %m : %s')
+    enqueue_at = datetime.now() + timedelta(minutes=0.1)
+    scheduler.enqueue_at(enqueue_at, printTask)
+

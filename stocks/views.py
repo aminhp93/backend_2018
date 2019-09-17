@@ -404,7 +404,7 @@ def stock_backtest(request):
         array = []
         for m in range(1, 2):
             index = m * 23 * 16
-            item = '[' + date_2018()[index:] + ',' + date_2019()[0:index - 1] + ']'
+            item = '[' + date_2016()[index:] + ',' + date_2017()[0:index - 1] + ']'
             # item = '[' + date_2018()[23*16:23*22-1] + ']'
             array.append(item)
 
@@ -509,9 +509,12 @@ def stock_backtest_results(request):
     for i in range(0, len(posts)):
         post = posts[i]
         title = post.title
-        content = json.loads(post.content)[-1][-1]['NAV']
+        content = json.loads(post.content)[-1][-1]
+        NAV = content['NAV']
+        total_NAV = content['total_NAV']
         results.append({
             'title': title,
-            'content': content,
+            'NAV': NAV,
+            'total_NAV': total_NAV
         })
     return JsonResponse({'data': results})
