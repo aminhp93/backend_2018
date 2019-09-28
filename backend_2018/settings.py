@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'channels',
     'tinder',
     'core',
+    'tags',
     'rest_framework',
     # other apps
     'django_rq',
@@ -195,14 +196,12 @@ RQ_QUEUES = {
         'HOST': 'localhost',
         'PORT': 6379,
         'DB': 0,
-        'PASSWORD': 'Miamikki521',
         'DEFAULT_TIMEOUT': 0,
     },
     'with-sentinel': {
         'SENTINELS': [('localhost', 26736), ('localhost', 26737)],
         'MASTER_NAME': 'redismaster',
         'DB': 0,
-        'PASSWORD': '1234567',
         'SOCKET_TIMEOUT': None,
         'CONNECTION_KWARGS': {
             'socket_connect_timeout': 0.3
