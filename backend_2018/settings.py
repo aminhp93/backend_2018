@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'tags',
     'rest_framework',
     # other apps
-    'django_rq',
+    # 'django_rq',
 ]
 
 MIDDLEWARE = [
