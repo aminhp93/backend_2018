@@ -2,22 +2,22 @@ import re
 from datetime import datetime, timedelta, date
 from core.models import Config
 from .constants import date_2012, date_2013, date_2014, date_2015, date_2016, date_2017, date_2018, date_2019
-from django_rq import job
-import django_rq
+# from django_rq import job
+# import django_rq
 
 import requests
 
-from redis import Redis
-from rq import Queue
+# from redis import Redis
+# from rq import Queue
 
-q = Queue(connection=Redis())
+# q = Queue(connection=Redis())
 
-def count_words_at_url(url):
-    """Just an example function that's called async."""
-    resp = requests.get(url)
-    return len(resp.text.split())
+# def count_words_at_url(url):
+#     """Just an example function that's called async."""
+#     resp = requests.get(url)
+#     return len(resp.text.split())
 
-job = q.enqueue(count_words_at_url, 'http://nvie.com')
+# job = q.enqueue(count_words_at_url, 'http://nvie.com')
 
 
 def count_trading_times(data, start_time, end_time):
@@ -33,7 +33,7 @@ def count_trading_times(data, start_time, end_time):
         if data[i]['Date'][0:4] == end_time[0:4] and data[i]['Date'][5:7] == end_time[5:7]:
             array_end_index.append(i)
     print(data[array_start_index[0]]['Date'],
-          data[array_end_index[-1]]['Date'],1 )
+          data[array_end_index[-1]]['Date'], 1)
     return {
         'start_obj': data[array_start_index[0]],
         'end_obj': data[array_end_index[-1]],
@@ -90,6 +90,7 @@ def range_date_to_update():
     # print(start_index, end_index)
     return date_2019()[start_index:end_index + 21]
 
+
 def get_last_updated_time():
     today_date = datetime.now().strftime("%Y-%m-%d")
     today_hour = (datetime.now() - timedelta(hours=17)).strftime("%H")
@@ -99,7 +100,8 @@ def get_last_updated_time():
         last_updated_time = configs[0].value[1:11]
     if today_date == last_updated_time:
         if today_hour < '16' and today_hour > '00':
-            last_updated_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            last_updated_time = (
+                datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     return last_updated_time
 
 # @job
@@ -111,10 +113,10 @@ def get_last_updated_time():
 #     print(96)
 #     scheduler = django_rq.get_scheduler('default')
 #     # delete any existing jobs in the scheduler when the app starts up
-    
+
 
 #     # Have 'mytask' run every 10s
-    
+
 #     # return datetime.now().strftime('%M %D %H: %m : %s')
 #     enqueue_at = datetime.now() + timedelta(minutes=0.1)
 #     scheduler.enqueue_at(enqueue_at, printTask)
@@ -127,4 +129,3 @@ def get_last_updated_time():
 #         func=printTask,
 #         interval=10
 #     )
-

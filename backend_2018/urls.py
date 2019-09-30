@@ -36,6 +36,6 @@ urlpatterns = [
     url(r'^api/tinder/', include('tinder.api.urls', namespace='tinder-api')),
 ]
 
-urlpatterns += [
-    path('django-rq/', include('django_rq.urls'))
-]
+# urlpatterns += [
+#     path('django-rq/', include('django_rq.urls'))
+# ]
