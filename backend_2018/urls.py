@@ -17,11 +17,12 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 
-from .views import home
+from .views import home, googlesheet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
+    path('googlesheet/', googlesheet, name='googlesheet'),
     url(r'^chat/', include('chat.urls', namespace='chat')),
     url(r'^posts/', include('posts.urls', namespace='posts')),
     url(r'^notes/', include('notes.urls', namespace='notes')),
