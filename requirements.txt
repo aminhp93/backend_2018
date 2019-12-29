@@ -39,5 +39,8 @@ Twisted==19.10.0
 txaio==18.8.1
 uritemplate==3.0.1
 urllib3==1.25.7
+<<<<<<< HEAD
 whitenoise==5.0.1
+=======
+>>>>>>> 4d3bb65787d81aed5f47589c53869646516d9682
 zope.interface==4.7.1
