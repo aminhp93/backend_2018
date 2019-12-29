@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -174,7 +173,6 @@ CORS_ALLOW_HEADERS = (
 CORS_ORIGIN_ALLOW_ALL = True
 
 RELIC_LICENCE = 'ba8107196204f7310b42e78a18086d9f6cbe49c5'
-django_heroku.settings(locals())
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20000000
 
