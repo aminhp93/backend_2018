@@ -105,6 +105,8 @@ def stock_create(request):
         elif Year == '2018':
             range_date = date_2018()
         elif Year == '2019':
+            range_date = date_2019()
+        elif Year == '2020':
             range_date = range_date_to_update()
         else:
             range_date = range_date_to_update()
@@ -310,7 +312,7 @@ def stock_filter(request):
             Q(percentage_change_in_price__gt=percentage_change_in_price_min) &
             Q(Symbol__regex=r'{0}'.format(Symbol_search))
         ).order_by('-today_capitalization')
-        
+        print(filtered_stocks)
         for stock in filtered_stocks:
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
