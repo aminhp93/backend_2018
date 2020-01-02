@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta, date
 from core.models import Config
-from .constants import date_2012, date_2013, date_2014, date_2015, date_2016, date_2017, date_2018, date_2019
+from .constants import date_2012, date_2013, date_2014, date_2015, date_2016, date_2017, date_2018, date_2019, date_2020
 # from django_rq import job
 # import django_rq
 
@@ -73,22 +73,22 @@ def range_date_to_update():
         today_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     elif weekday == 'Sun':
         today_date = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
-    search_today_date = re.search(r'{0}'.format(today_date), date_2019())
+    search_today_date = re.search(r'{0}'.format(today_date), date_2020())
     if search_today_date == None:
         return ''
     end_index = search_today_date.span()[0]
 
     last_updated_time = get_last_updated_time()
     if last_updated_time is None:
-        last_updated_time = '2019-01-02'
+        last_updated_time = '2020-01-02'
     last_updated_time = '"' + last_updated_time + 'T00:00:00Z"'
     start_time = last_updated_time
-    match_start_date = re.search(r'{0}'.format(start_time), date_2019())
+    match_start_date = re.search(r'{0}'.format(start_time), date_2020())
     start_index = 0
     if match_start_date is not None:
         start_index = match_start_date.span()[1]
-    # print(start_index, end_index)
-    return date_2019()[start_index:end_index + 21]
+    # print(start_index, end_index, '------------')
+    return date_2020()[start_index:end_index + 21]
 
 
 def get_last_updated_time():

@@ -105,6 +105,8 @@ def stock_create(request):
         elif Year == '2018':
             range_date = date_2018()
         elif Year == '2019':
+            range_date = date_2019()
+        elif Year == '2020':
             range_date = range_date_to_update()
         else:
             range_date = range_date_to_update()
@@ -128,9 +130,9 @@ def stock_create(request):
         # if 'today_capitalization' in body:
             stock.today_capitalization = stock.Volume * stock.Close
             if stock.Symbol == price_data[i - 1]['Symbol']:
-                # print(stock.Close, price_data[i - 1]['Symbol'])
+                print(stock.Close, price_data[i - 1]['Symbol'])
                 stock.percentage_change_in_price = (stock.Close - price_data[i - 1]['Close'])/price_data[i - 1]['Close']
-                # print(price_data[i - 1]['Volume'])
+                print(price_data[i - 1]['Volume'])
                 if price_data[i - 1]['Volume'] == 0:
                     stock.percentage_change_in_volume = 0
                 else:
@@ -310,7 +312,7 @@ def stock_filter(request):
             Q(percentage_change_in_price__gt=percentage_change_in_price_min) &
             Q(Symbol__regex=r'{0}'.format(Symbol_search))
         ).order_by('-today_capitalization')
-        
+        # print(filtered_stocks)
         for stock in filtered_stocks:
             result.append(get_default_attributes(stock))
         return JsonResponse({'stocks': result})
