@@ -130,9 +130,9 @@ def stock_create(request):
         # if 'today_capitalization' in body:
             stock.today_capitalization = stock.Volume * stock.Close
             if stock.Symbol == price_data[i - 1]['Symbol']:
-                # print(stock.Close, price_data[i - 1]['Symbol'])
+                print(stock.Close, price_data[i - 1]['Symbol'])
                 stock.percentage_change_in_price = (stock.Close - price_data[i - 1]['Close'])/price_data[i - 1]['Close']
-                # print(price_data[i - 1]['Volume'])
+                print(price_data[i - 1]['Volume'])
                 if price_data[i - 1]['Volume'] == 0:
                     stock.percentage_change_in_volume = 0
                 else:
