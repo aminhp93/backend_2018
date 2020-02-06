@@ -99,7 +99,7 @@ def get_last_updated_time():
     if configs:
         last_updated_time = configs[0].value[1:11]
     if today_date == last_updated_time:
-        if today_hour < '16' and today_hour > '00':
+        if today_hour < '15' and today_hour > '00':
             last_updated_time = (
                 datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     return last_updated_time
