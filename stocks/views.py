@@ -298,6 +298,7 @@ def stock_filter(request):
             today_capitalization_min = body['today_capitalization_min']
         if 'percentage_change_in_price_min' in body:
             percentage_change_in_price_min = body['percentage_change_in_price_min']
+        # last_updated_time = '2020-02-06T00:00:00Z'
         print(last_updated_time, today_capitalization_min, percentage_change_in_price_min)
         filtered_stocks = Stock.objects.filter(
             # Q(Volume__gt=Volume_min) & 
